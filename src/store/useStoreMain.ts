@@ -1,4 +1,3 @@
-// useStore.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Event, Table, Guest, Furniture } from '../types';
@@ -14,13 +13,11 @@ interface StoreState {
   updateGuest: (guestId: string, updates: Partial<Guest>) => void;
   addFurniture: (furniture: Furniture) => void;
   updateFurniture: (furnitureId: string, updates: Partial<Furniture>) => void;
-  setAllTablesActive: () => void; // Added
-  setAllTablesInactive: () => void; // Added
 }
 
 export const useStore = create<StoreState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       events: [],
       currentEvent: null,
       setCurrentEvent: (event) => set({ currentEvent: event }),
@@ -31,9 +28,10 @@ export const useStore = create<StoreState>()(
           if (!state.currentEvent) return state;
           const updatedEvent = {
             ...state.currentEvent,
-            tables: [...state.currentEvent.tables, { ...table, active: true }], // Initialize active as true
+            tables: [...state.currentEvent.tables],
             furniture: state.currentEvent.furniture || []
           };
+          updatedEvent.tables.push(table);
           return {
             currentEvent: updatedEvent,
             events: state.events.map((e) =>
@@ -125,44 +123,6 @@ export const useStore = create<StoreState>()(
             ...state.currentEvent,
             tables: state.currentEvent.tables,
             furniture: updatedFurniture
-          };
-          return {
-            currentEvent: updatedEvent,
-            events: state.events.map((e) =>
-              e.id === updatedEvent.id ? updatedEvent : e
-            ),
-          };
-        }),
-      setAllTablesActive: () =>
-        set((state) => {
-          if (!state.currentEvent) return state;
-          const updatedTables = state.currentEvent.tables.map((table) => ({
-            ...table,
-            active: true,
-          }));
-          const updatedEvent = {
-            ...state.currentEvent,
-            tables: updatedTables,
-            furniture: state.currentEvent.furniture || []
-          };
-          return {
-            currentEvent: updatedEvent,
-            events: state.events.map((e) =>
-              e.id === updatedEvent.id ? updatedEvent : e
-            ),
-          };
-        }),
-      setAllTablesInactive: () =>
-        set((state) => {
-          if (!state.currentEvent) return state;
-          const updatedTables = state.currentEvent.tables.map((table) => ({
-            ...table,
-            active: false,
-          }));
-          const updatedEvent = {
-            ...state.currentEvent,
-            tables: updatedTables,
-            furniture: state.currentEvent.furniture || []
           };
           return {
             currentEvent: updatedEvent,

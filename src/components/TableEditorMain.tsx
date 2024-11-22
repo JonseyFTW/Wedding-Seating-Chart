@@ -1,12 +1,10 @@
-// TableEditor.tsx
 import React from 'react';
 import { Plus, Minus } from 'lucide-react';
 import { useStore } from '../store/useStore';
-import { Table as TableType } from '../types';
+import { Table } from '../types';
 import { FloorPlan } from './FloorPlan';
 import { MobileFloorPlan } from './MobileFloorPlan';
 import { generateUUID } from '../utils/uuid';
-import { GuestEditor } from './GuestEditor'; // Importing GuestEditor
 
 const tableTypes = [
   { type: '1-sided', label: '1 Sided', defaultSeats: 8 },
@@ -61,9 +59,9 @@ export const TableEditor: React.FC<TableEditorProps> = ({ isMobileView }) => {
 
     Object.entries(tables).forEach(([type, config]) => {
       for (let i = 0; i < config.count; i++) {
-        const table: TableType = {
+        const table: Table = {
           id: generateUUID(),
-          type: type as TableType['type'],
+          type: type as Table['type'],
           seats: config.seats,
           position: { x: currentX, y: currentY },
           guests: [],
@@ -85,11 +83,7 @@ export const TableEditor: React.FC<TableEditorProps> = ({ isMobileView }) => {
   if (!showTableConfig) {
     return (
       <div className="fixed inset-0 overflow-hidden" style={{ top: '64px' }}>
-        {isMobileView ? (
-          <MobileFloorPlan />
-        ) : (
-          <FloorPlan />
-        )}
+        {isMobileView ? <MobileFloorPlan /> : <FloorPlan />}
       </div>
     );
   }

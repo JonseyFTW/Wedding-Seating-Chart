@@ -1,18 +1,16 @@
-// TableEditor.tsx
 import React from 'react';
 import { Plus, Minus } from 'lucide-react';
 import { useStore } from '../store/useStore';
-import { Table as TableType } from '../types';
+import { Table } from '../types';
 import { FloorPlan } from './FloorPlan';
 import { MobileFloorPlan } from './MobileFloorPlan';
 import { generateUUID } from '../utils/uuid';
-import { GuestEditor } from './GuestEditor'; // Importing GuestEditor
 
 const tableTypes = [
-  { type: '1-sided', label: '1 Sided', defaultSeats: 8 },
+  { type: '1-sided', label: '1 sided', defaultSeats: 8 },
   { type: 'round', label: 'Round', defaultSeats: 8 },
-  { type: '2-sided', label: '2 Sided', defaultSeats: 8 },
-  { type: '4-sided', label: '4 Sided', defaultSeats: 10 },
+  { type: '2-sided', label: '2 sided', defaultSeats: 8 },
+  { type: '4-sided', label: '4 sided', defaultSeats: 10 },
 ] as const;
 
 interface TableEditorProps {
@@ -56,14 +54,14 @@ export const TableEditor: React.FC<TableEditorProps> = ({ isMobileView }) => {
     const margin = 40;
     let currentX = margin;
     let currentY = margin;
-    const maxWidth = window.innerWidth - margin * 2;
+    const maxWidth = window.innerWidth - (margin * 2);
     const tablesPerRow = Math.floor(maxWidth / (gridSize + margin));
 
     Object.entries(tables).forEach(([type, config]) => {
       for (let i = 0; i < config.count; i++) {
-        const table: TableType = {
+        const table: Table = {
           id: generateUUID(),
-          type: type as TableType['type'],
+          type: type as Table['type'],
           seats: config.seats,
           position: { x: currentX, y: currentY },
           guests: [],
@@ -85,11 +83,7 @@ export const TableEditor: React.FC<TableEditorProps> = ({ isMobileView }) => {
   if (!showTableConfig) {
     return (
       <div className="fixed inset-0 overflow-hidden" style={{ top: '64px' }}>
-        {isMobileView ? (
-          <MobileFloorPlan />
-        ) : (
-          <FloorPlan />
-        )}
+        {isMobileView ? <MobileFloorPlan /> : <FloorPlan />}
       </div>
     );
   }
@@ -104,68 +98,50 @@ export const TableEditor: React.FC<TableEditorProps> = ({ isMobileView }) => {
       </p>
 
       <div className="space-y-4 md:space-y-6 bg-white p-6 rounded-lg border-2 border-[#F4E1B2] shadow-md">
-        {/* Header */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-2 text-sm font-medium text-[#646E78]">
-          <span>Type</span>
-          <span className="text-center">Tables</span>
-          <span className="text-center">Guests</span>
-        </div>
-
-        {/* Table Rows */}
         {tableTypes.map(({ type, label }) => (
-          <div
-            key={type}
-            className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center"
-          >
-            {/* Type Label */}
-            <span className="text-sm md:text-base font-serif text-[#646E78]">
+          <div key={type} className="flex items-center justify-between">
+            <span className="w-20 md:w-24 text-sm md:text-base font-serif text-[#646E78]">
               {label}
             </span>
-
-            {/* Tables Controls */}
-            <div className="flex justify-center items-center gap-2">
-              <button
-                onClick={() => updateCount(type, false)}
-                className="p-1.5 md:p-2 hover:bg-[#F4E1B2]/20 rounded"
-                type="button"
-                aria-label={`Decrease number of ${label} tables`}
-              >
-                <Minus className="w-4 h-4 text-[#646E78]" />
-              </button>
-              <span className="w-6 md:w-8 text-center text-sm md:text-base text-[#646E78]">
-                {tables[type].count}
-              </span>
-              <button
-                onClick={() => updateCount(type, true)}
-                className="p-1.5 md:p-2 hover:bg-[#F4E1B2]/20 rounded"
-                type="button"
-                aria-label={`Increase number of ${label} tables`}
-              >
-                <Plus className="w-4 h-4 text-[#646E78]" />
-              </button>
-            </div>
-
-            {/* Guests Controls */}
-            <div className="flex justify-center items-center gap-2">
-              <button
-                onClick={() => updateSeats(type, false)}
-                className="p-1.5 md:p-2 hover:bg-[#F4E1B2]/20 rounded"
-                type="button"
-                aria-label={`Decrease number of seats for ${label} tables`}
-              >
-                <Minus className="w-4 h-4 text-[#646E78]" />
-              </button>
-              <span className="w-6 md:w-8 text-center text-sm md:text-base text-[#646E78]">
-                {tables[type].seats}
-              </span>
-              <button
-                onClick={() => updateSeats(type, true)}
-                className="p-1.5 md:p-2 hover:bg-[#F4E1B2]/20 rounded"
-                type="button"
-                aria-label={`Increase number of seats for ${label} tables`}
-              >
-                <Plus className="w-4 h-4 text-[#646E78]" />
-              </button>
+            <div className="flex items-center gap-2 md:gap-4">
+              <div className="flex items-center gap-1 md:gap-2">
+                <button
+                  onClick={() => updateCount(type, false)}
+                  className="p-1.5 md:p-2 hover:bg-[#F4E1B2]/20 rounded"
+                  type="button"
+                >
+                  <Minus className="w-4 h-4 text-[#646E78]" />
+                </button>
+                <span className="w-6 md:w-8 text-center text-sm md:text-base text-[#646E78]">
+                  {tables[type].count}
+                </span>
+                <button
+                  onClick={() => updateCount(type, true)}
+                  className="p-1.5 md:p-2 hover:bg-[#F4E1B2]/20 rounded"
+                  type="button"
+                >
+                  <Plus className="w-4 h-4 text-[#646E78]" />
+                </button>
+              </div>
+              <div className="flex items-center gap-1 md:gap-2">
+                <button
+                  onClick={() => updateSeats(type, false)}
+                  className="p-1.5 md:p-2 hover:bg-[#F4E1B2]/20 rounded"
+                  type="button"
+                >
+                  <Minus className="w-4 h-4 text-[#646E78]" />
+                </button>
+                <span className="w-6 md:w-8 text-center text-sm md:text-base text-[#646E78]">
+                  {tables[type].seats}
+                </span>
+                <button
+                  onClick={() => updateSeats(type, true)}
+                  className="p-1.5 md:p-2 hover:bg-[#F4E1B2]/20 rounded"
+                  type="button"
+                >
+                  <Plus className="w-4 h-4 text-[#646E78]" />
+                </button>
+              </div>
             </div>
           </div>
         ))}
@@ -173,11 +149,7 @@ export const TableEditor: React.FC<TableEditorProps> = ({ isMobileView }) => {
 
       <div className="mt-6 md:mt-8 pt-4 border-t border-[#F4E1B2]">
         <p className="text-xs md:text-sm text-gray-600 mb-4 text-center">
-          {Object.values(tables).reduce(
-            (acc, { count, seats }) => acc + count * seats,
-            0
-          )}{' '}
-          total seats
+          {Object.values(tables).reduce((acc, { count, seats }) => acc + count * seats, 0)} total seats
         </p>
         <button
           onClick={handleAddTables}

@@ -14,3 +14,26 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+/* Add this to your index.css for consistent modal styling */
+.modal {
+  max-width: 600px; /* Controls width */
+  max-height: 90vh; /* Controls height, leaving some space around */
+  margin: auto; /* Center horizontally */
+  padding: 1.5rem; /* Adds consistent padding */
+  border-radius: 0.5rem; /* Rounded corners */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* Shadow effect */
+  background-color: #ffffff; /* Background color for the modal */
+}
+
+.modal-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3); /* Overlay */
+  z-index: 50;
+}
