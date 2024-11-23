@@ -37,3 +37,8 @@ body {
   background: rgba(0, 0, 0, 0.3); /* Overlay */
   z-index: 50;
 }
+.round-table {
+  width: 128px !important;
+  height: 128px !important;
+  border-radius: 50% !important;
+}

@@ -1,12 +1,23 @@
-import React from 'react';
+// src/App.jsx
+import React, { useState, useEffect } from 'react';
 import { useStore } from './store/useStore';
-import { EventSelector } from './components/EventSelector';
-import { TableEditor } from './components/TableEditor';
+import { EventSelector } from './components/EventSelector.jsx';
+import { TableEditor } from './components/TableEditor.jsx';
 import { RotateCcw, Heart } from 'lucide-react';
 
 export default function App() {
   const { currentEvent, setCurrentEvent } = useStore();
-  const [isMobileView, setIsMobileView] = React.useState(window.innerWidth < 768);
+  const [isMobileView, setIsMobileView] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileView(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize, { passive: true });
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleReset = () => {
     if (window.confirm('Are you sure you want to reset? This will clear all data.')) {

@@ -1,40 +1,90 @@
-import React from 'react';
+// src/components/Toolbar.jsx
+import React, { useState } from 'react';
 import { useStore } from '../store/useStore';
-import { Download, Mail, Plus, Grid, Music2, GlassWater, Camera, Gift, Cake, ArrowUpRight, Users, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import {
+  Download,
+  Mail,
+  Plus,
+  Grid,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  Users,
+  GlassWater,
+  Camera,
+  Music2,
+  Gift,
+  Cake,
+  ArrowUpRight,
+} from 'lucide-react'; // Import all necessary icons directly
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { generateUUID } from '../utils/uuid';
 
 const furnitureTypes = [
-  { type: 'danceFloor', label: 'Dance Floor', icon: Users, width: 200, height: 200 },
-  { type: 'bar', label: 'Bar', icon: GlassWater, width: 150, height: 50 },
-  { type: 'photoBooth', label: 'Photo Booth', icon: Camera, width: 80, height: 80 },
-  { type: 'dj', label: 'DJ Booth', icon: Music2, width: 80, height: 40 },
-  { type: 'giftTable', label: 'Gift Table', icon: Gift, width: 100, height: 40 },
-  { type: 'cakeTable', label: 'Cake Table', icon: Cake, width: 80, height: 40 },
-  { type: 'entrance', label: 'Entrance', icon: ArrowUpRight, width: 60, height: 20 },
-] as const;
+  {
+    type: 'danceFloor',
+    label: 'Dance Floor',
+    icon: Users, // Assign imported icon directly
+    width: 200,
+    height: 200,
+  },
+  {
+    type: 'bar',
+    label: 'Bar',
+    icon: GlassWater, // Assign imported icon directly
+    width: 150,
+    height: 50,
+  },
+  {
+    type: 'photoBooth',
+    label: 'Photo Booth',
+    icon: Camera, // Assign imported icon directly
+    width: 80,
+    height: 80,
+  },
+  {
+    type: 'dj',
+    label: 'DJ Booth',
+    icon: Music2, // Assign imported icon directly
+    width: 80,
+    height: 40,
+  },
+  {
+    type: 'giftTable',
+    label: 'Gift Table',
+    icon: Gift, // Assign imported icon directly
+    width: 100,
+    height: 40,
+  },
+  {
+    type: 'cakeTable',
+    label: 'Cake Table',
+    icon: Cake, // Assign imported icon directly
+    width: 80,
+    height: 40,
+  },
+  {
+    type: 'entrance',
+    label: 'Entrance',
+    icon: ArrowUpRight, // Assign imported icon directly
+    width: 60,
+    height: 20,
+  },
+];
 
-interface ToolbarProps {
-  onToggleGrid: () => void;
-  showGrid: boolean;
-  onZoomIn?: () => void;
-  onZoomOut?: () => void;
-  onResetView?: () => void;
-}
-
-export const Toolbar: React.FC<ToolbarProps> = ({ 
-  onToggleGrid, 
-  showGrid, 
-  onZoomIn, 
+export const Toolbar = ({
+  onToggleGrid,
+  showGrid,
+  onZoomIn,
   onZoomOut,
-  onResetView
+  onResetView,
 }) => {
   const { currentEvent, addFurniture } = useStore();
-  const [showFurnitureMenu, setShowFurnitureMenu] = React.useState(false);
+  const [showFurnitureMenu, setShowFurnitureMenu] = useState(false);
 
-  const handleAddFurniture = (type: typeof furnitureTypes[number]['type']) => {
-    const furnitureConfig = furnitureTypes.find(f => f.type === type);
+  const handleAddFurniture = (type) => {
+    const furnitureConfig = furnitureTypes.find((f) => f.type === type);
     if (!furnitureConfig || !currentEvent) return;
 
     addFurniture({
@@ -44,8 +94,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       rotation: 0,
       size: {
         width: furnitureConfig.width,
-        height: furnitureConfig.height
-      }
+        height: furnitureConfig.height,
+      },
     });
     setShowFurnitureMenu(false);
   };
@@ -59,12 +109,12 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       useCORS: true,
       allowTaint: true,
     });
-    
+
     const imgData = canvas.toDataURL('image/png');
     const pdf = new jsPDF({
       orientation: 'landscape',
       unit: 'px',
-      format: [canvas.width, canvas.height]
+      format: [canvas.width, canvas.height],
     });
 
     pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
@@ -73,12 +123,15 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
   const shareViaEmail = () => {
     const subject = encodeURIComponent(`Seating Chart - ${currentEvent?.name}`);
-    const body = encodeURIComponent('Please find attached the seating chart for the event.');
+    const body = encodeURIComponent(
+      'Please find attached the seating chart for the event.'
+    );
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
   return (
     <div className="fixed top-20 right-4 flex flex-col gap-2 z-50">
+      {/* Furniture Add Button */}
       <div className="relative">
         <button
           onClick={() => setShowFurnitureMenu(!showFurnitureMenu)}
@@ -106,6 +159,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         )}
       </div>
 
+      {/* Toggle Grid Button */}
       <button
         onClick={onToggleGrid}
         className={`bg-white p-2 rounded-full shadow-lg hover:bg-gray-50 active:bg-gray-100 ${
@@ -117,6 +171,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <Grid className="w-5 h-5" />
       </button>
 
+      {/* Zoom In Button */}
       {onZoomIn && (
         <button
           onClick={onZoomIn}
@@ -128,6 +183,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         </button>
       )}
 
+      {/* Zoom Out Button */}
       {onZoomOut && (
         <button
           onClick={onZoomOut}
@@ -139,6 +195,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         </button>
       )}
 
+      {/* Reset View Button */}
       {onResetView && (
         <button
           onClick={onResetView}
@@ -150,6 +207,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         </button>
       )}
 
+      {/* Export to PDF Button */}
       <button
         onClick={exportToPDF}
         className="bg-white p-2 rounded-full shadow-lg hover:bg-gray-50 active:bg-gray-100"
@@ -159,6 +217,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <Download className="w-5 h-5" />
       </button>
 
+      {/* Share via Email Button */}
       <button
         onClick={shareViaEmail}
         className="bg-white p-2 rounded-full shadow-lg hover:bg-gray-50 active:bg-gray-100"

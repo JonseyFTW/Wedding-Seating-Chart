@@ -1,24 +1,8 @@
-// useStore.ts
-import { create } from 'zustand';
+// src/store/useStore.js
+import { create } from 'zustand'; // Changed from default to named import
 import { persist } from 'zustand/middleware';
-import { Event, Table, Guest, Furniture } from '../types';
 
-interface StoreState {
-  events: Event[];
-  currentEvent: Event | null;
-  setCurrentEvent: (event: Event) => void;
-  addEvent: (event: Event) => void;
-  addTable: (table: Table) => void;
-  updateTable: (tableId: string, updates: Partial<Table>) => void;
-  addGuest: (guest: Guest) => void;
-  updateGuest: (guestId: string, updates: Partial<Guest>) => void;
-  addFurniture: (furniture: Furniture) => void;
-  updateFurniture: (furnitureId: string, updates: Partial<Furniture>) => void;
-  setAllTablesActive: () => void; // Added
-  setAllTablesInactive: () => void; // Added
-}
-
-export const useStore = create<StoreState>()(
+export const useStore = create(
   persist(
     (set, get) => ({
       events: [],
@@ -31,8 +15,11 @@ export const useStore = create<StoreState>()(
           if (!state.currentEvent) return state;
           const updatedEvent = {
             ...state.currentEvent,
-            tables: [...state.currentEvent.tables, { ...table, active: true }], // Initialize active as true
-            furniture: state.currentEvent.furniture || []
+            tables: [
+              ...state.currentEvent.tables,
+              { ...table, active: true },
+            ], // Initialize active as true
+            furniture: state.currentEvent.furniture || [],
           };
           return {
             currentEvent: updatedEvent,
@@ -50,7 +37,7 @@ export const useStore = create<StoreState>()(
           const updatedEvent = {
             ...state.currentEvent,
             tables: updatedTables,
-            furniture: state.currentEvent.furniture || []
+            furniture: state.currentEvent.furniture || [],
           };
           return {
             currentEvent: updatedEvent,
@@ -70,7 +57,7 @@ export const useStore = create<StoreState>()(
           const updatedEvent = {
             ...state.currentEvent,
             tables: updatedTables,
-            furniture: state.currentEvent.furniture || []
+            furniture: state.currentEvent.furniture || [],
           };
           return {
             currentEvent: updatedEvent,
@@ -91,7 +78,7 @@ export const useStore = create<StoreState>()(
           const updatedEvent = {
             ...state.currentEvent,
             tables: updatedTables,
-            furniture: state.currentEvent.furniture || []
+            furniture: state.currentEvent.furniture || [],
           };
           return {
             currentEvent: updatedEvent,
@@ -106,7 +93,10 @@ export const useStore = create<StoreState>()(
           const updatedEvent = {
             ...state.currentEvent,
             tables: state.currentEvent.tables,
-            furniture: [...(state.currentEvent.furniture || []), furniture]
+            furniture: [
+              ...(state.currentEvent.furniture || []),
+              furniture,
+            ],
           };
           return {
             currentEvent: updatedEvent,
@@ -118,13 +108,14 @@ export const useStore = create<StoreState>()(
       updateFurniture: (furnitureId, updates) =>
         set((state) => {
           if (!state.currentEvent) return state;
-          const updatedFurniture = (state.currentEvent.furniture || []).map((item) =>
-            item.id === furnitureId ? { ...item, ...updates } : item
+          const updatedFurniture = (state.currentEvent.furniture || []).map(
+            (item) =>
+              item.id === furnitureId ? { ...item, ...updates } : item
           );
           const updatedEvent = {
             ...state.currentEvent,
             tables: state.currentEvent.tables,
-            furniture: updatedFurniture
+            furniture: updatedFurniture,
           };
           return {
             currentEvent: updatedEvent,
@@ -143,7 +134,7 @@ export const useStore = create<StoreState>()(
           const updatedEvent = {
             ...state.currentEvent,
             tables: updatedTables,
-            furniture: state.currentEvent.furniture || []
+            furniture: state.currentEvent.furniture || [],
           };
           return {
             currentEvent: updatedEvent,
@@ -162,7 +153,7 @@ export const useStore = create<StoreState>()(
           const updatedEvent = {
             ...state.currentEvent,
             tables: updatedTables,
-            furniture: state.currentEvent.furniture || []
+            furniture: state.currentEvent.furniture || [],
           };
           return {
             currentEvent: updatedEvent,

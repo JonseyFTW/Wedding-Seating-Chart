@@ -1,63 +1,40 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { useDraggable } from '@dnd-kit/core';
-import { Furniture as FurnitureType } from '../types';
-import {
-  Music2,
-  GlassWater,
-  Camera,
-  Gift,
-  Cake,
-  ArrowUpRight,
-  Users,
-  RotateCw,
-  RotateCcw,
-  Maximize2,
-  Minimize2,
-  Trash2,
-} from 'lucide-react';
+import { Music2, GlassWater, Camera, Gift, Cake, ArrowUpRight, Users, RotateCw, RotateCcw, Maximize2, Minimize2, Trash2 } from 'lucide-react';
 import { useStore } from '../store/useStore';
-
-interface FurnitureProps {
-  item: FurnitureType;
-}
 
 const MIN_SIZE = 40;
 const MAX_SIZE = 400;
 const SIZE_STEP = 20;
 
-export const Furniture: React.FC<FurnitureProps> = ({ item }) => {
+export const Furniture = ({ item }) => {
   const { updateFurniture, currentEvent, setCurrentEvent } = useStore();
-  const [localRotation, setLocalRotation] = React.useState(item.rotation || 0);
+  const [localRotation, setLocalRotation] = useState(item.rotation || 0);
 
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: item.id,
     data: item,
   });
 
-  // Outer container style: absolute positioning without transform
-  const containerStyle: React.CSSProperties = {
-    position: 'absolute',
-    left: `${item.position.x}px`,
-    top: `${item.position.y}px`,
-    width: `${item.size.width}px`,
-    height: `${item.size.height}px`,
-    touchAction: 'none',
-    zIndex: 1,
-  };
-
-  // Draggable content style: apply transform and rotation
-  const draggableStyle: React.CSSProperties = {
+  const draggableStyle = {
     transform: transform
       ? `translate3d(${transform.x}px, ${transform.y}px, 0) rotate(${localRotation}deg)`
       : `rotate(${localRotation}deg)`,
-    width: '100%',
-    height: '100%',
-    position: 'relative',
-    zIndex: 2,
+    zIndex: 1,
+    width: `${item.size.width}px`,
+    height: `${item.size.height}px`,
   };
 
-  const handleRotate = React.useCallback(
-    (direction: 'clockwise' | 'counterclockwise', e: React.MouseEvent) => {
+  const style = {
+    position: 'absolute',
+    left: `${item.position.x}px`,
+    top: `${item.position.y}px`,
+    touchAction: 'none',
+    pointerEvents: 'auto',
+  };
+
+  const handleRotate = useCallback(
+    (direction, e) => {
       e.preventDefault();
       e.stopPropagation();
       const newRotation = localRotation + (direction === 'clockwise' ? 90 : -90);
@@ -67,8 +44,8 @@ export const Furniture: React.FC<FurnitureProps> = ({ item }) => {
     [localRotation, item.id, updateFurniture]
   );
 
-  const handleResize = React.useCallback(
-    (dimension: 'width' | 'height', increase: boolean, e: React.MouseEvent) => {
+  const handleResize = useCallback(
+    (dimension, increase, e) => {
       e.preventDefault();
       e.stopPropagation();
 
@@ -86,8 +63,8 @@ export const Furniture: React.FC<FurnitureProps> = ({ item }) => {
     [item.id, item.size, updateFurniture]
   );
 
-  const handleDelete = React.useCallback(
-    (e: React.MouseEvent) => {
+  const handleDelete = useCallback(
+    (e) => {
       e.preventDefault();
       e.stopPropagation();
 
@@ -150,12 +127,14 @@ export const Furniture: React.FC<FurnitureProps> = ({ item }) => {
     }
   };
 
+  const getFurnitureContentClasses = () => {
+    return 'bg-white/90 border-2 border-[#D3A6B8] rounded-lg shadow-lg select-none flex flex-col items-center justify-center gap-2 cursor-grab active:cursor-grabbing';
+  };
+
   return (
-    <div className="relative group" style={containerStyle}>
+    <div className="relative group" style={style}>
       {/* Controls positioned at the top */}
-      <div
-        className="absolute -top-8 left-1/2 transform -translate-x-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-      >
+      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
         <div className="flex items-center gap-1 bg-[#F4E1B2] rounded-full px-2 py-1 shadow-md border border-[#E5C594]">
           <button
             onClick={(e) => handleRotate('counterclockwise', e)}
@@ -198,7 +177,7 @@ export const Furniture: React.FC<FurnitureProps> = ({ item }) => {
             title="Increase height"
             disabled={item.size.height >= MAX_SIZE}
           >
-            <Maximize2 className="w-4 h-4 text-[#646E78]" />
+            <Maximize2 className="w-4 h-4 text-[#646E78] rotate-90" />
           </button>
           <button
             onClick={(e) => handleResize('height', false, e)}
@@ -207,7 +186,7 @@ export const Furniture: React.FC<FurnitureProps> = ({ item }) => {
             title="Decrease height"
             disabled={item.size.height <= MIN_SIZE}
           >
-            <Minimize2 className="w-4 h-4 text-[#646E78]" />
+            <Minimize2 className="w-4 h-4 text-[#646E78] rotate-90" />
           </button>
           <button
             onClick={handleDelete}
@@ -220,18 +199,16 @@ export const Furniture: React.FC<FurnitureProps> = ({ item }) => {
         </div>
       </div>
 
-      {/* Draggable content */}
+      {/* Furniture container with rotation applied */}
       <div
         ref={setNodeRef}
         {...attributes}
         {...listeners}
         style={draggableStyle}
-        className="w-full h-full flex flex-col items-center justify-center gap-2 cursor-grab active:cursor-grabbing"
+        className={getFurnitureContentClasses()}
       >
-        <div className="bg-white/90 border-2 border-[#D3A6B8] rounded-lg shadow-lg select-none w-full h-full flex flex-col items-center justify-center gap-2">
-          {getIcon()}
-          <span className="text-sm font-medium text-center px-2">{getLabel()}</span>
-        </div>
+        {getIcon()}
+        <span className="text-sm font-medium text-center px-2">{getLabel()}</span>
       </div>
     </div>
   );
