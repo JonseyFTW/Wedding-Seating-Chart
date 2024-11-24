@@ -1,5 +1,4 @@
-// src/store/useStore.js
-import { create } from 'zustand'; // Changed from default to named import
+import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export const useStore = create(
@@ -18,7 +17,7 @@ export const useStore = create(
             tables: [
               ...state.currentEvent.tables,
               { ...table, active: true },
-            ], // Initialize active as true
+            ],
             furniture: state.currentEvent.furniture || [],
           };
           return {
@@ -154,6 +153,93 @@ export const useStore = create(
             ...state.currentEvent,
             tables: updatedTables,
             furniture: state.currentEvent.furniture || [],
+          };
+          return {
+            currentEvent: updatedEvent,
+            events: state.events.map((e) =>
+              e.id === updatedEvent.id ? updatedEvent : e
+            ),
+          };
+        }),
+      // AI Seating Related Actions
+      updateEventWithAISeating: (tables) =>
+        set((state) => {
+          if (!state.currentEvent) return state;
+          const updatedEvent = {
+            ...state.currentEvent,
+            tables: tables.map(table => ({
+              ...table,
+              active: true,
+            })),
+            furniture: state.currentEvent.furniture || [],
+          };
+          return {
+            currentEvent: updatedEvent,
+            events: state.events.map((e) =>
+              e.id === updatedEvent.id ? updatedEvent : e
+            ),
+          };
+        }),
+      addGuestRelationship: (guest1Id, guest2Id) =>
+        set((state) => {
+          if (!state.currentEvent) return state;
+          const updatedEvent = {
+            ...state.currentEvent,
+            relationships: [
+              ...(state.currentEvent.relationships || []),
+              { source: guest1Id, target: guest2Id }
+            ]
+          };
+          return {
+            currentEvent: updatedEvent,
+            events: state.events.map((e) =>
+              e.id === updatedEvent.id ? updatedEvent : e
+            ),
+          };
+        }),
+      addGuestBlacklist: (guest1Id, guest2Id) =>
+        set((state) => {
+          if (!state.currentEvent) return state;
+          const updatedEvent = {
+            ...state.currentEvent,
+            blacklist: [
+              ...(state.currentEvent.blacklist || []),
+              { source: guest1Id, target: guest2Id }
+            ]
+          };
+          return {
+            currentEvent: updatedEvent,
+            events: state.events.map((e) =>
+              e.id === updatedEvent.id ? updatedEvent : e
+            ),
+          };
+        }),
+      removeGuestRelationship: (guest1Id, guest2Id) =>
+        set((state) => {
+          if (!state.currentEvent) return state;
+          const updatedEvent = {
+            ...state.currentEvent,
+            relationships: (state.currentEvent.relationships || []).filter(
+              rel => !(rel.source === guest1Id && rel.target === guest2Id) &&
+                    !(rel.source === guest2Id && rel.target === guest1Id)
+            )
+          };
+          return {
+            currentEvent: updatedEvent,
+            events: state.events.map((e) =>
+              e.id === updatedEvent.id ? updatedEvent : e
+            ),
+          };
+        }),
+      removeGuestBlacklist: (guest1Id, guest2Id) =>
+        set((state) => {
+          if (!state.currentEvent) return state;
+          const updatedEvent = {
+            ...state.currentEvent,
+            blacklist: (state.currentEvent.blacklist || []).filter(
+              rel => !(rel.source === guest1Id && rel.target === guest2Id) &&
+                    !(rel.source === guest2Id && rel.target === guest1Id)
+            )
           };
           return {
             currentEvent: updatedEvent,
