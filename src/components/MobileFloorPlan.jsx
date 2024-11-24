@@ -1,11 +1,10 @@
+// src/components/MobileFloorPlan.jsx
 import React, { useRef, useEffect, useState, useMemo } from 'react';
 import {
   DndContext,
-  DragEndEvent,
   useSensor,
   useSensors,
   PointerSensor,
-  Modifier,
 } from '@dnd-kit/core';
 import { Table } from './Table';
 import { Furniture } from './Furniture';
@@ -15,9 +14,9 @@ import { RotateCcw, RotateCw, Eye, EyeOff } from 'lucide-react';
 
 const GRID_SIZE = 20;
 
-export const MobileFloorPlan: React.FC = () => {
+export const MobileFloorPlan = () => {
   const { currentEvent, updateTable, updateFurniture } = useStore();
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [showGrid, setShowGrid] = useState(true);
   const [scale, setScale] = useState(1);
@@ -31,7 +30,7 @@ export const MobileFloorPlan: React.FC = () => {
   const [rotation, setRotation] = useState(0); // Track rotation for all tables
 
   // State for window width to handle conditional rendering
-  const [windowWidth, setWindowWidth] = useState<number>(
+  const [windowWidth, setWindowWidth] = useState(
     typeof window !== 'undefined' ? window.innerWidth : 0
   );
 
@@ -78,7 +77,7 @@ export const MobileFloorPlan: React.FC = () => {
   };
 
   // Helper function to get table dimensions based on type
-  const getTableDimensions = (tableType: string) => {
+  const getTableDimensions = (tableType) => {
     switch (tableType) {
       case 'round':
         return { width: 128, height: 128 }; // 'w-32 h-32' => 32 * 4px = 128px
@@ -93,13 +92,12 @@ export const MobileFloorPlan: React.FC = () => {
     }
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = (event) => {
     setDragging(false); // Dragging ends, allow panning again
     const { active, delta } = event;
-    const id = active.id as string;
+    const id = active.id;
 
-    const snapToGrid = (value: number) =>
-      Math.round(value / GRID_SIZE) * GRID_SIZE;
+    const snapToGrid = (value) => Math.round(value / GRID_SIZE) * GRID_SIZE;
 
     const table = currentEvent?.tables.find((t) => t.id === id);
     if (table) {
@@ -122,30 +120,31 @@ export const MobileFloorPlan: React.FC = () => {
         position: { x: newX, y: newY },
         rotation: rotation,
       });
-    } else {
-      const furniture = currentEvent?.furniture.find((f) => f.id === id);
-      if (furniture) {
-        const rawX = furniture.position.x + delta.x;
-        const rawY = furniture.position.y + delta.y;
+      return;
+    }
 
-        const newX = Math.min(
-          Math.max(0, snapToGrid(rawX)),
-          dimensions.width - furniture.size.width
-        );
-        const newY = Math.min(
-          Math.max(0, snapToGrid(rawY)),
-          dimensions.height - furniture.size.height
-        );
+    const furniture = currentEvent?.furniture.find((f) => f.id === id);
+    if (furniture) {
+      const rawX = furniture.position.x + delta.x;
+      const rawY = furniture.position.y + delta.y;
 
-        updateFurniture(id, { position: { x: newX, y: newY } });
-      }
+      const newX = Math.min(
+        Math.max(0, snapToGrid(rawX)),
+        dimensions.width - furniture.size.width
+      );
+      const newY = Math.min(
+        Math.max(0, snapToGrid(rawY)),
+        dimensions.height - furniture.size.height
+      );
+
+      updateFurniture(id, { position: { x: newX, y: newY } });
     }
 
     // Explicitly re-apply the sensors after each drag
     resetInteractions();
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = (e) => {
     if (e.touches.length === 2) {
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
@@ -163,7 +162,7 @@ export const MobileFloorPlan: React.FC = () => {
     }
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
+  const handleTouchMove = (e) => {
     if (e.touches.length === 2) {
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
@@ -196,7 +195,7 @@ export const MobileFloorPlan: React.FC = () => {
   };
 
   // Rotate all tables clockwise or counterclockwise
-  const rotateTables = (direction: 'clockwise' | 'counterclockwise') => {
+  const rotateTables = (direction) => {
     setRotation(rotation + (direction === 'clockwise' ? 90 : -90));
   };
 
@@ -209,7 +208,7 @@ export const MobileFloorPlan: React.FC = () => {
 
   // Create a custom modifier to adjust for scale
   const adjustScaleModifier = useMemo(() => {
-    const modifier: Modifier = ({ transform }) => {
+    const modifier = ({ transform }) => {
       return {
         ...transform,
         x: transform.x / scale,

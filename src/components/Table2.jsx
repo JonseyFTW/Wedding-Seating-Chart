@@ -1,25 +1,14 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { useDraggable } from '@dnd-kit/core';
-import { Table as TableType } from '../types';
 import { Users, Edit2, RotateCcw, RotateCw, Eye, EyeOff } from 'lucide-react';
 import { GuestEditor } from './GuestEditor';
 import { useStore } from '../store/useStore';
 
-interface TableProps {
-  table: TableType;
-  tableNumber: number;
-  showNames: boolean;
-}
-
-export const Table: React.FC<TableProps> = ({
-  table,
-  tableNumber,
-  showNames,
-}) => {
+export const Table = ({ table, tableNumber, showNames }) => {
   const { updateTable, setAllTablesInactive, setAllTablesActive } = useStore();
-  const [showGuestEditor, setShowGuestEditor] = React.useState(false);
-  const [localRotation, setLocalRotation] = React.useState(table.rotation || 0);
-  const [guestNamesVisible, setGuestNamesVisible] = React.useState(showNames);
+  const [showGuestEditor, setShowGuestEditor] = useState(false);
+  const [localRotation, setLocalRotation] = useState(table.rotation || 0);
+  const [guestNamesVisible, setGuestNamesVisible] = useState(showNames);
 
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: table.id,
@@ -33,8 +22,7 @@ export const Table: React.FC<TableProps> = ({
         return {
           width: 128,
           height: 128,
-          borderRadius: '9999px', // Use 9999px for a perfect circle
-          aspectRatio: '1 / 1', // Ensure perfect circle
+          borderRadius: '50%',
         };
       case '1-sided':
         return { width: 192, height: 96, borderRadius: '0.5rem' };
@@ -49,14 +37,14 @@ export const Table: React.FC<TableProps> = ({
 
   const tableDimensions = getTableDimensions();
 
-  const draggableStyle: React.CSSProperties = {
+  const draggableStyle = {
     transform: transform
       ? `translate3d(${transform.x}px, ${transform.y}px, 0) rotate(${localRotation}deg)`
       : `rotate(${localRotation}deg)`,
     zIndex: showGuestEditor ? 10 : 1,
   };
 
-  const style: React.CSSProperties = {
+  const style = {
     position: 'absolute',
     touchAction: 'none',
     width: `${tableDimensions.width}px`,
@@ -65,11 +53,10 @@ export const Table: React.FC<TableProps> = ({
     left: `${table.position.x}px`,
     top: `${table.position.y}px`,
     pointerEvents: showGuestEditor ? 'none' : 'auto',
-    ...(table.type === 'round' && { aspectRatio: '1 / 1' }), // Ensure perfect circle for round tables
   };
 
-  const handleRotate = React.useCallback(
-    (direction: 'clockwise' | 'counterclockwise', e: React.MouseEvent) => {
+  const handleRotate = useCallback(
+    (direction, e) => {
       e.preventDefault();
       e.stopPropagation();
       const newRotation = localRotation + (direction === 'clockwise' ? 90 : -90);
@@ -79,19 +66,22 @@ export const Table: React.FC<TableProps> = ({
     [localRotation, table.id, updateTable]
   );
 
-  const handleEditClick = React.useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setShowGuestEditor(true);
-    setAllTablesInactive();
-  }, [setAllTablesInactive]);
+  const handleEditClick = useCallback(
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setShowGuestEditor(true);
+      setAllTablesInactive();
+    },
+    [setAllTablesInactive]
+  );
 
-  const handleCloseGuestEditor = React.useCallback(() => {
+  const handleCloseGuestEditor = useCallback(() => {
     setShowGuestEditor(false);
     setAllTablesActive();
   }, [setAllTablesActive]);
 
-  const toggleGuestNamesVisibility = React.useCallback((e: React.MouseEvent) => {
+  const toggleGuestNamesVisibility = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
     setGuestNamesVisible((prevState) => !prevState);
@@ -143,18 +133,15 @@ export const Table: React.FC<TableProps> = ({
   };
 
   const getTableContentClasses = () => {
-    const baseClasses = "bg-white border-2 border-[#F4E1B2] shadow-lg select-none flex flex-col items-center justify-center gap-1 cursor-grab active:cursor-grabbing";
-    return table.type === 'round' 
-      ? `${baseClasses} rounded-full aspect-square` 
-      : `${baseClasses} rounded-lg`;
+    const baseClasses =
+      'bg-white border-2 border-[#F4E1B2] shadow-lg select-none flex flex-col items-center justify-center gap-1 cursor-grab active:cursor-grabbing';
+    return table.type === 'round' ? `${baseClasses} rounded-full` : `${baseClasses} rounded-lg`;
   };
 
   return (
     <>
-      <div
-        className="relative group"
-        style={{ ...style, zIndex: showGuestEditor ? 10 : 1 }}
-      >
+      <div className="relative group" style={{ ...style, zIndex: showGuestEditor ? 10 : 1 }}>
+        {/* Controls positioned at the top */}
         <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-30">
           <div className="flex items-center gap-1 bg-[#F4E1B2] rounded-full px-2 py-1 shadow-md border border-[#E5C594]">
             <button
@@ -187,15 +174,12 @@ export const Table: React.FC<TableProps> = ({
               type="button"
               title={guestNamesVisible ? 'Hide guest names' : 'Show guest names'}
             >
-              {guestNamesVisible ? (
-                <EyeOff className="w-4 h-4 text-[#646E78]" />
-              ) : (
-                <Eye className="w-4 h-4 text-[#646E78]" />
-              )}
+              {guestNamesVisible ? <EyeOff className="w-4 h-4 text-[#646E78]" /> : <Eye className="w-4 h-4 text-[#646E78]" />}
             </button>
           </div>
         </div>
 
+        {/* Table container */}
         <div
           ref={setNodeRef}
           {...attributes}
@@ -203,9 +187,7 @@ export const Table: React.FC<TableProps> = ({
           style={draggableStyle}
           className={getTableContentClasses()}
         >
-          <span className="font-semibold text-center text-[#646E78]">
-            Table {tableNumber}
-          </span>
+          <span className="font-semibold text-center text-[#646E78]">Table {tableNumber}</span>
           <div className="flex items-center justify-center gap-1 text-sm text-[#646E78]">
             <Users className="w-4 h-4" />
             <span>
@@ -213,6 +195,7 @@ export const Table: React.FC<TableProps> = ({
             </span>
           </div>
 
+          {/* Guest names around the table */}
           {renderGuestNames()}
         </div>
       </div>
@@ -220,11 +203,7 @@ export const Table: React.FC<TableProps> = ({
       {showGuestEditor && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="absolute inset-0 bg-black opacity-50"></div>
-          <GuestEditor
-            table={table}
-            tableNumber={tableNumber}
-            onClose={handleCloseGuestEditor}
-          />
+          <GuestEditor table={table} tableNumber={tableNumber} onClose={handleCloseGuestEditor} />
         </div>
       )}
     </>

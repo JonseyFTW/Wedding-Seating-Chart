@@ -1,8 +1,7 @@
-// TableEditor.tsx
-import React from 'react';
+// src/components/TableEditor.jsx
+import React, { useState } from 'react';
 import { Plus, Minus } from 'lucide-react';
 import { useStore } from '../store/useStore';
-import { Table as TableType } from '../types';
 import { FloorPlan } from './FloorPlan';
 import { MobileFloorPlan } from './MobileFloorPlan';
 import { generateUUID } from '../utils/uuid';
@@ -13,25 +12,19 @@ const tableTypes = [
   { type: 'round', label: 'Round', defaultSeats: 8 },
   { type: '2-sided', label: '2 Sided', defaultSeats: 8 },
   { type: '4-sided', label: '4 Sided', defaultSeats: 10 },
-] as const;
+];
 
-interface TableEditorProps {
-  isMobileView: boolean;
-}
-
-export const TableEditor: React.FC<TableEditorProps> = ({ isMobileView }) => {
+export const TableEditor = ({ isMobileView }) => {
   const { currentEvent, addTable } = useStore();
-  const [showTableConfig, setShowTableConfig] = React.useState(!currentEvent?.tables.length);
-  const [tables, setTables] = React.useState<
-    Record<string, { count: number; seats: number }>
-  >({
+  const [showTableConfig, setShowTableConfig] = useState(!currentEvent?.tables.length);
+  const [tables, setTables] = useState({
     '1-sided': { count: 1, seats: 8 },
     round: { count: 6, seats: 8 },
     '2-sided': { count: 0, seats: 8 },
     '4-sided': { count: 0, seats: 10 },
   });
 
-  const updateCount = (type: string, increment: boolean) => {
+  const updateCount = (type, increment) => {
     setTables((prev) => ({
       ...prev,
       [type]: {
@@ -41,7 +34,7 @@ export const TableEditor: React.FC<TableEditorProps> = ({ isMobileView }) => {
     }));
   };
 
-  const updateSeats = (type: string, increment: boolean) => {
+  const updateSeats = (type, increment) => {
     setTables((prev) => ({
       ...prev,
       [type]: {
@@ -61,9 +54,9 @@ export const TableEditor: React.FC<TableEditorProps> = ({ isMobileView }) => {
 
     Object.entries(tables).forEach(([type, config]) => {
       for (let i = 0; i < config.count; i++) {
-        const table: TableType = {
+        const table = {
           id: generateUUID(),
-          type: type as TableType['type'],
+          type: type,
           seats: config.seats,
           position: { x: currentX, y: currentY },
           guests: [],
@@ -85,11 +78,7 @@ export const TableEditor: React.FC<TableEditorProps> = ({ isMobileView }) => {
   if (!showTableConfig) {
     return (
       <div className="fixed inset-0 overflow-hidden" style={{ top: '64px' }}>
-        {isMobileView ? (
-          <MobileFloorPlan />
-        ) : (
-          <FloorPlan />
-        )}
+        {isMobileView ? <MobileFloorPlan /> : <FloorPlan />}
       </div>
     );
   }

@@ -1,6 +1,5 @@
 import React from 'react';
 import { useStore } from '../store/useStore';
-import { Event } from '../types';
 import { generateUUID } from '../utils/uuid';
 import { Heart } from 'lucide-react';
 
@@ -11,11 +10,11 @@ const eventTypes = [
   'After Party',
 ];
 
-export const EventSelector: React.FC = () => {
+export const EventSelector = () => {
   const { addEvent, setCurrentEvent } = useStore();
 
-  const handleEventSelect = (eventName: string) => {
-    const newEvent: Event = {
+  const handleEventSelect = (eventName) => {
+    const newEvent = {
       id: generateUUID(),
       name: eventName,
       tables: [],
