@@ -5,7 +5,7 @@ import { useStore } from '../store/useStore';
 import { RelationshipGraph } from './RelationshipGraph';
 import { GuestList } from './GuestList';
 import { BlacklistManager } from './BlacklistManager';
-import { optimizeSeating } from '../utils/seatingOptimizer';
+import { optimizeSeating } from '../utils/seatingOptimizer.js';
 import { RELATIONSHIP_TYPES, SEATING_PREFERENCES } from '../utils/constants';
 import { toast } from 'react-hot-toast';
 

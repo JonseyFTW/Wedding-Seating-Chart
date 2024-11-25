@@ -1,5 +1,5 @@
 // src/utils/seatingOptimizer.js
-import { RELATIONSHIP_TYPES, SEATING_PREFERENCES } from './constants';
+import { RELATIONSHIP_TYPES, SEATING_PREFERENCES } from './constants.js';
 
 export const optimizeSeating = async (guests, relationships, blacklist, tables, seatingPreference) => {
   const n = guests.length;
