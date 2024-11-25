@@ -1,8 +1,7 @@
-import React, { useRef, useEffect } from 'react';
-import ForceGraph2D from 'react-force-graph';
-import { useCallback } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
+import ForceGraph2D from 'react-force-graph-2d';
 
-export const RelationshipGraph = ({ guests, relationships, onAddRelationship }) => {
+export const RelationshipGraph = ({ guests, relationships, onAddRelationship, onRemoveRelationship }) => {
   const graphRef = useRef();
 
   const graphData = {
@@ -13,7 +12,8 @@ export const RelationshipGraph = ({ guests, relationships, onAddRelationship }) 
     })),
     links: relationships.map(rel => ({
       source: rel.source,
-      target: rel.target
+      target: rel.target,
+      color: '#D3A6B8'
     }))
   };
 
@@ -26,7 +26,17 @@ export const RelationshipGraph = ({ guests, relationships, onAddRelationship }) 
       const secondNode = node;
       
       if (firstNode.id !== secondNode.id) {
-        onAddRelationship(firstNode.id, secondNode.id);
+        // Check if relationship already exists
+        const existingRelationship = relationships.find(
+          rel => (rel.source === firstNode.id && rel.target === secondNode.id) ||
+                (rel.source === secondNode.id && rel.target === firstNode.id)
+        );
+
+        if (existingRelationship) {
+          onRemoveRelationship(firstNode.id, secondNode.id);
+        } else {
+          onAddRelationship(firstNode.id, secondNode.id);
+        }
       }
       
       firstNode.__selected = false;
@@ -34,7 +44,7 @@ export const RelationshipGraph = ({ guests, relationships, onAddRelationship }) 
     }
     
     graphRef.current.refresh();
-  }, [onAddRelationship]);
+  }, [onAddRelationship, onRemoveRelationship, relationships]);
 
   useEffect(() => {
     if (graphRef.current) {
@@ -44,18 +54,23 @@ export const RelationshipGraph = ({ guests, relationships, onAddRelationship }) 
   }, []);
 
   return (
-    <div className="h-[400px] border rounded-lg overflow-hidden bg-white">
+    <div className="relative h-[400px] border rounded-lg overflow-hidden bg-white">
+      <div className="absolute top-2 left-2 right-2 text-sm text-[#4A3B52] bg-white/90 p-2 rounded-lg shadow-sm border border-[#D3A6B8]/20">
+        Click on two guests to create or remove a connection between them. Connected guests will be seated together when possible.
+      </div>
       <ForceGraph2D
         ref={graphRef}
         graphData={graphData}
         nodeLabel="name"
         nodeColor={node => node.__selected ? '#D3A6B8' : '#4A3B52'}
-        linkColor={() => '#E5C594'}
+        linkColor="color"
         onNodeClick={handleNodeClick}
         nodeRelSize={6}
         linkWidth={2}
         linkDirectionalParticles={2}
         linkDirectionalParticleSpeed={0.005}
+        cooldownTicks={50}
+        d3VelocityDecay={0.1}
       />
     </div>
   );

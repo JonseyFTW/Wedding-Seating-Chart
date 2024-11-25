@@ -124,7 +124,7 @@ export const Table = ({ table, tableNumber, showNames }) => {
             pointerEvents: 'none',
           }}
         >
-          <div className="bg-white px-2 py-1 rounded-full text-xs shadow-md border border-[#F4E1B2] whitespace-nowrap z-20">
+          <div className="bg-white px-2 py-1 rounded-full text-xs shadow-md border border-[#F4E1B2] whitespace-nowrap z-20 text-[#4A3B52]">
             {guest.name}
           </div>
         </div>
@@ -150,7 +150,7 @@ export const Table = ({ table, tableNumber, showNames }) => {
               type="button"
               title="Rotate counterclockwise"
             >
-              <RotateCcw className="w-4 h-4 text-[#646E78]" />
+              <RotateCcw className="w-4 h-4 text-[#4A3B52]" />
             </button>
             <button
               onClick={(e) => handleRotate('clockwise', e)}
@@ -158,7 +158,7 @@ export const Table = ({ table, tableNumber, showNames }) => {
               type="button"
               title="Rotate clockwise"
             >
-              <RotateCw className="w-4 h-4 text-[#646E78]" />
+              <RotateCw className="w-4 h-4 text-[#4A3B52]" />
             </button>
             <button
               onClick={handleEditClick}
@@ -166,7 +166,7 @@ export const Table = ({ table, tableNumber, showNames }) => {
               type="button"
               title="Edit guests"
             >
-              <Edit2 className="w-4 h-4 text-[#646E78]" />
+              <Edit2 className="w-4 h-4 text-[#4A3B52]" />
             </button>
             <button
               onClick={toggleGuestNamesVisibility}
@@ -174,7 +174,7 @@ export const Table = ({ table, tableNumber, showNames }) => {
               type="button"
               title={guestNamesVisible ? 'Hide guest names' : 'Show guest names'}
             >
-              {guestNamesVisible ? <EyeOff className="w-4 h-4 text-[#646E78]" /> : <Eye className="w-4 h-4 text-[#646E78]" />}
+              {guestNamesVisible ? <EyeOff className="w-4 h-4 text-[#4A3B52]" /> : <Eye className="w-4 h-4 text-[#4A3B52]" />}
             </button>
           </div>
         </div>
@@ -187,9 +187,9 @@ export const Table = ({ table, tableNumber, showNames }) => {
           style={draggableStyle}
           className={getTableContentClasses()}
         >
-          <span className="font-semibold text-center text-[#646E78]">Table {tableNumber}</span>
-          <div className="flex items-center justify-center gap-1 text-sm text-[#646E78]">
-            <Users className="w-4 h-4" />
+          <span className="font-semibold text-center text-[#4A3B52]">Table {tableNumber}</span>
+          <div className="flex items-center justify-center gap-1 text-sm text-[#4A3B52]">
+            <Users className="w-4 h-4 text-[#4A3B52]" />
             <span>
               {table.guests.filter((g) => g.name).length}/{table.seats}
             </span>

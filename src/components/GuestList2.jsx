@@ -5,13 +5,10 @@ import { RELATIONSHIP_TYPES } from '../utils/constants';
 
 export const GuestList = ({ 
   guests, 
-  onUpdateGuests, 
+  onUpdateGuests,
   relationships,
   onAddRelationship,
-  onRemoveRelationship,
-  blacklist,
-  onAddToBlacklist,
-  onRemoveFromBlacklist
+  onRemoveRelationship
 }) => {
   const [selectedGuest, setSelectedGuest] = useState(null);
   const [showRelationshipModal, setShowRelationshipModal] = useState(false);
@@ -21,38 +18,15 @@ export const GuestList = ({
     setShowRelationshipModal(true);
   };
 
-  const handleRelationshipChange = (targetGuest, relationshipType) => {
-    // Remove any existing relationship first
-    onRemoveRelationship(selectedGuest.id, targetGuest.id);
-    
-    // Remove from blacklist if exists
-    onRemoveFromBlacklist?.(selectedGuest.id, targetGuest.id);
-
-    // Add new relationship or blacklist
-    if (relationshipType === RELATIONSHIP_TYPES.CANNOT_SIT.value) {
-      onAddToBlacklist?.(selectedGuest.id, targetGuest.id);
-    } else if (relationshipType !== RELATIONSHIP_TYPES.NONE.value) {
-      onAddRelationship(selectedGuest.id, targetGuest.id, relationshipType);
-    }
+  const handleAddRelationship = (targetGuest, relationshipType) => {
+    onAddRelationship(selectedGuest.id, targetGuest.id, relationshipType);
   };
 
   const getRelationshipType = (guest1, guest2) => {
-    // Check blacklist first
-    const isBlacklisted = blacklist?.find(
-      b => (b.source === guest1.id && b.target === guest2.id) ||
-           (b.source === guest2.id && b.target === guest1.id)
-    );
-    
-    if (isBlacklisted) {
-      return RELATIONSHIP_TYPES.CANNOT_SIT.value;
-    }
-
-    // Then check relationships
-    const relationship = relationships?.find(
+    const relationship = relationships.find(
       r => (r.source === guest1.id && r.target === guest2.id) ||
            (r.source === guest2.id && r.target === guest1.id)
     );
-    
     return relationship?.type || RELATIONSHIP_TYPES.NONE.value;
   };
 
@@ -110,7 +84,9 @@ export const GuestList = ({
         <RelationshipModal
           selectedGuest={selectedGuest}
           guests={guests.filter(g => g.id !== selectedGuest.id)}
-          onRelationshipChange={handleRelationshipChange}
+          relationships={relationships}
+          onAddRelationship={handleAddRelationship}
+          onRemoveRelationship={onRemoveRelationship}
           onClose={() => {
             setSelectedGuest(null);
             setShowRelationshipModal(false);
@@ -125,7 +101,9 @@ export const GuestList = ({
 const RelationshipModal = ({
   selectedGuest,
   guests,
-  onRelationshipChange,
+  relationships,
+  onAddRelationship,
+  onRemoveRelationship,
   onClose,
   getRelationshipType
 }) => {
@@ -147,7 +125,14 @@ const RelationshipModal = ({
               <span className="text-[#4A3B52]">{guest.name}</span>
               <select
                 value={getRelationshipType(selectedGuest, guest)}
-                onChange={(e) => onRelationshipChange(guest, e.target.value)}
+                onChange={(e) => {
+                  const type = e.target.value;
+                  if (type === RELATIONSHIP_TYPES.NONE.value) {
+                    onRemoveRelationship(selectedGuest.id, guest.id);
+                  } else {
+                    onAddRelationship(selectedGuest.id, guest.id, type);
+                  }
+                }}
                 className="ml-4 rounded-md border-[#D3A6B8]/20 focus:border-[#D3A6B8] focus:ring focus:ring-[#D3A6B8]/20"
               >
                 {Object.values(RELATIONSHIP_TYPES).map(type => (

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 
-export const BlacklistManager = ({ guests, blacklist, onAddToBlacklist }) => {
+export const BlacklistManager = ({ guests, blacklist, onAddToBlacklist, onRemoveFromBlacklist }) => {
   const [guest1, setGuest1] = useState('');
   const [guest2, setGuest2] = useState('');
 

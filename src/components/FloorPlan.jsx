@@ -1,4 +1,3 @@
-// src/components/FloorPlan.jsx
 import React, { useRef, useEffect, useState } from 'react';
 import {
   DndContext,
@@ -33,7 +32,8 @@ export const FloorPlan = () => {
   useEffect(() => {
     const updateSize = () => {
       if (containerRef.current) {
-        const viewportHeight = window.innerHeight - 80;
+        // Adjust for both headers (104px) and padding
+        const viewportHeight = window.innerHeight - 104 - 32;
         const viewportWidth = window.innerWidth - 48;
         const width = Math.floor(viewportWidth / GRID_SIZE) * GRID_SIZE;
         const height = Math.floor(viewportHeight / GRID_SIZE) * GRID_SIZE;
