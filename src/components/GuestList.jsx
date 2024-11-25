@@ -1,7 +1,13 @@
 // src/components/GuestList.jsx
-import React, { useState } from 'react';
-import { X, UserPlus } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { X, UserPlus, Search } from 'lucide-react';
 import { RELATIONSHIP_TYPES } from '../utils/constants';
+
+// Helper function to get last name
+const getLastName = (fullName) => {
+  const nameParts = fullName.trim().split(' ');
+  return nameParts.length > 1 ? nameParts[nameParts.length - 1] : fullName;
+};
 
 export const GuestList = ({ 
   guests, 
@@ -11,53 +17,116 @@ export const GuestList = ({
   onRemoveRelationship,
   blacklist,
   onAddToBlacklist,
-  onRemoveFromBlacklist
+  onRemoveFromBlacklist 
 }) => {
   const [selectedGuest, setSelectedGuest] = useState(null);
-  const [showRelationshipModal, setShowRelationshipModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const handleGuestSelect = (guest) => {
+  const handleGuestClick = (guest) => {
     setSelectedGuest(guest);
-    setShowRelationshipModal(true);
   };
 
-  const handleRelationshipChange = (targetGuest, relationshipType) => {
-    // Remove any existing relationship first
-    onRemoveRelationship(selectedGuest.id, targetGuest.id);
-    
-    // Remove from blacklist if exists
-    onRemoveFromBlacklist?.(selectedGuest.id, targetGuest.id);
+  const handleRelationshipChange = (targetGuestId, type) => {
+    if (!selectedGuest || selectedGuest.id === targetGuestId) return;
 
-    // Add new relationship or blacklist
-    if (relationshipType === RELATIONSHIP_TYPES.CANNOT_SIT.value) {
-      onAddToBlacklist?.(selectedGuest.id, targetGuest.id);
-    } else if (relationshipType !== RELATIONSHIP_TYPES.NONE.value) {
-      onAddRelationship(selectedGuest.id, targetGuest.id, relationshipType);
+    // Remove existing relationship if any
+    onRemoveRelationship?.(selectedGuest.id, targetGuestId);
+
+    // Add new relationship if not "No Relationship"
+    if (type !== RELATIONSHIP_TYPES.NONE.value) {
+      onAddRelationship(selectedGuest.id, targetGuestId, type);
     }
   };
 
-  const getRelationshipType = (guest1, guest2) => {
-    // Check blacklist first
-    const isBlacklisted = blacklist?.find(
-      b => (b.source === guest1.id && b.target === guest2.id) ||
-           (b.source === guest2.id && b.target === guest1.id)
-    );
-    
-    if (isBlacklisted) {
-      return RELATIONSHIP_TYPES.CANNOT_SIT.value;
-    }
-
-    // Then check relationships
+  const getRelationshipType = (guest1Id, guest2Id) => {
     const relationship = relationships?.find(
-      r => (r.source === guest1.id && r.target === guest2.id) ||
-           (r.source === guest2.id && r.target === guest1.id)
+      rel => (rel.source === guest1Id && rel.target === guest2Id) ||
+            (rel.source === guest2Id && rel.target === guest1Id)
     );
-    
     return relationship?.type || RELATIONSHIP_TYPES.NONE.value;
   };
 
+  const filteredGuests = useMemo(() => {
+    return guests
+      .filter(guest => 
+        guest.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .sort((a, b) => getLastName(a.name).localeCompare(getLastName(b.name)));
+  }, [guests, searchTerm]);
+
+  if (selectedGuest) {
+    const otherGuests = guests
+      .filter(g => g.id !== selectedGuest.id)
+      .sort((a, b) => getLastName(a.name).localeCompare(getLastName(b.name)));
+
+    return (
+      <div className="bg-white rounded-lg shadow-md">
+        <div className="p-4 border-b border-[#F4E1B2] flex justify-between items-center">
+          <h3 className="text-lg font-serif text-[#4A3B52]">
+            Manage Relationships for {selectedGuest.name}
+          </h3>
+          <button
+            onClick={() => setSelectedGuest(null)}
+            className="text-[#4A3B52] hover:text-[#646E78]"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="p-4">
+          <div className="mb-4 relative">
+            <input
+              type="text"
+              placeholder="Search guests..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-2 pl-10 rounded-lg border-[#D3A6B8]/20 focus:border-[#D3A6B8] focus:ring focus:ring-[#D3A6B8]/20"
+            />
+            <Search className="w-4 h-4 text-[#D3A6B8] absolute left-3 top-3" />
+          </div>
+
+          <div className="space-y-3 max-h-[400px] overflow-y-auto">
+            {otherGuests
+              .filter(guest => 
+                guest.name.toLowerCase().includes(searchTerm.toLowerCase())
+              )
+              .map(guest => (
+                <div key={guest.id} className="flex items-center justify-between">
+                  <span className="text-[#4A3B52]">{guest.name}</span>
+                  <select
+                    value={getRelationshipType(selectedGuest.id, guest.id)}
+                    onChange={(e) => handleRelationshipChange(guest.id, e.target.value)}
+                    className="rounded-md border-[#D3A6B8]/20 shadow-sm focus:border-[#D3A6B8] focus:ring focus:ring-[#D3A6B8]/20"
+                  >
+                    {Object.values(RELATIONSHIP_TYPES).map(type => (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="border rounded-lg overflow-hidden">
+      <div className="p-4 bg-[#FDF8F0] border-b border-[#F4E1B2]">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search guests..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-4 py-2 pl-10 rounded-lg border-[#D3A6B8]/20 focus:border-[#D3A6B8] focus:ring focus:ring-[#D3A6B8]/20"
+          />
+          <Search className="w-4 h-4 text-[#D3A6B8] absolute left-3 top-3" />
+        </div>
+      </div>
+
       <div className="max-h-[400px] overflow-y-auto">
         <table className="min-w-full divide-y divide-[#F4E1B2]">
           <thead className="bg-[#FDF8F0]">
@@ -74,7 +143,7 @@ export const GuestList = ({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-[#F4E1B2]">
-            {guests.map((guest) => (
+            {filteredGuests.map((guest) => (
               <tr key={guest.id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-[#4A3B52]">
                   {guest.name}
@@ -85,7 +154,7 @@ export const GuestList = ({
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => handleGuestSelect(guest)}
+                      onClick={() => handleGuestClick(guest)}
                       className="text-[#D3A6B8] hover:text-[#C295A7]"
                       title="Manage Relationships"
                     >
@@ -104,61 +173,6 @@ export const GuestList = ({
             ))}
           </tbody>
         </table>
-      </div>
-
-      {showRelationshipModal && selectedGuest && (
-        <RelationshipModal
-          selectedGuest={selectedGuest}
-          guests={guests.filter(g => g.id !== selectedGuest.id)}
-          onRelationshipChange={handleRelationshipChange}
-          onClose={() => {
-            setSelectedGuest(null);
-            setShowRelationshipModal(false);
-          }}
-          getRelationshipType={getRelationshipType}
-        />
-      )}
-    </div>
-  );
-};
-
-const RelationshipModal = ({
-  selectedGuest,
-  guests,
-  onRelationshipChange,
-  onClose,
-  getRelationshipType
-}) => {
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-serif text-[#4A3B52]">
-            Manage Relationships for {selectedGuest.name}
-          </h3>
-          <button onClick={onClose} className="text-[#646E78] hover:text-[#4A3B52]">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="space-y-4">
-          {guests.map(guest => (
-            <div key={guest.id} className="flex items-center justify-between p-3 bg-[#FDF8F0] rounded-lg">
-              <span className="text-[#4A3B52]">{guest.name}</span>
-              <select
-                value={getRelationshipType(selectedGuest, guest)}
-                onChange={(e) => onRelationshipChange(guest, e.target.value)}
-                className="ml-4 rounded-md border-[#D3A6B8]/20 focus:border-[#D3A6B8] focus:ring focus:ring-[#D3A6B8]/20"
-              >
-                {Object.values(RELATIONSHIP_TYPES).map(type => (
-                  <option key={type.value} value={type.value}>
-                    {type.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );

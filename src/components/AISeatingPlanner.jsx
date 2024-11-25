@@ -1,22 +1,42 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Upload, Users, UserPlus, UserMinus, RefreshCw, ArrowLeft } from 'lucide-react';
 import { parse } from 'papaparse';
 import { useStore } from '../store/useStore';
 import { RelationshipGraph } from './RelationshipGraph';
 import { GuestList } from './GuestList';
 import { BlacklistManager } from './BlacklistManager';
-import { optimizeSeating } from '../utils/seatingOptimizer.js';
+import { optimizeSeating } from '../utils/seatingOptimizer';
 import { RELATIONSHIP_TYPES, SEATING_PREFERENCES } from '../utils/constants';
 import { toast } from 'react-hot-toast';
 
 export const AISeatingPlanner = ({ onBack }) => {
+  const { currentEvent, updateEventWithAISeating, updateAIPlannerData } = useStore();
   const [guests, setGuests] = useState([]);
   const [relationships, setRelationships] = useState([]);
   const [blacklist, setBlacklist] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedGuest, setSelectedGuest] = useState(null);
   const [seatingPreference, setSeatingPreference] = useState(SEATING_PREFERENCES.BALANCED.value);
-  const { currentEvent, updateEventWithAISeating } = useStore();
+
+  // Load saved AI Planner data when component mounts
+  useEffect(() => {
+    if (currentEvent?.aiPlannerData) {
+      setGuests(currentEvent.aiPlannerData.guests || []);
+      setRelationships(currentEvent.aiPlannerData.relationships || []);
+      setBlacklist(currentEvent.aiPlannerData.blacklist || []);
+    }
+  }, [currentEvent]);
+
+  // Save AI Planner data whenever it changes
+  useEffect(() => {
+    if (guests.length > 0 || relationships.length > 0 || blacklist.length > 0) {
+      updateAIPlannerData({
+        guests,
+        relationships,
+        blacklist
+      });
+    }
+  }, [guests, relationships, blacklist, updateAIPlannerData]);
 
   const handleFileUpload = useCallback((event) => {
     const file = event.target.files[0];
@@ -163,8 +183,6 @@ export const AISeatingPlanner = ({ onBack }) => {
                     onAddToBlacklist={addToBlacklist}
                     onRemoveFromBlacklist={removeFromBlacklist}
                   />
-
-
                 </div>
                 
                 <div>

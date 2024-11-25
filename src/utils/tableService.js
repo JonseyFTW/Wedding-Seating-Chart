@@ -40,7 +40,7 @@ export const saveTableLayout = async (userId, layoutName, layout) => {
           id: guest.id,
           name: guest.name,
           seatNumber: guest.seatNumber,
-          tableId: guest.tableId
+          tableId: table.id
         })) : [],
         rotation: table.rotation || 0
       })),
@@ -57,6 +57,11 @@ export const saveTableLayout = async (userId, layoutName, layout) => {
         },
         rotation: item.rotation || 0
       })),
+      aiPlannerData: layout.aiPlannerData || {
+        guests: [],
+        relationships: [],
+        blacklist: []
+      },
       createdAt: new Date().toISOString()
     };
 
@@ -102,7 +107,7 @@ export const getTableLayouts = async (userId) => {
             id: guest.id,
             name: guest.name,
             seatNumber: guest.seatNumber,
-            tableId: guest.tableId
+            tableId: table.id
           })) : [],
           rotation: table.rotation || 0
         })) : [],
@@ -119,6 +124,11 @@ export const getTableLayouts = async (userId) => {
           },
           rotation: item.rotation || 0
         })) : [],
+        aiPlannerData: data.aiPlannerData || {
+          guests: [],
+          relationships: [],
+          blacklist: []
+        },
         createdAt: data.createdAt
       };
     });
@@ -162,7 +172,7 @@ export const updateTableLayout = async (layoutId, layout) => {
           id: guest.id,
           name: guest.name,
           seatNumber: guest.seatNumber,
-          tableId: guest.tableId
+          tableId: table.id
         })) : [],
         rotation: table.rotation || 0
       })),
@@ -179,6 +189,11 @@ export const updateTableLayout = async (layoutId, layout) => {
         },
         rotation: item.rotation || 0
       })),
+      aiPlannerData: layout.aiPlannerData || {
+        guests: [],
+        relationships: [],
+        blacklist: []
+      },
       updatedAt: new Date().toISOString()
     };
 
