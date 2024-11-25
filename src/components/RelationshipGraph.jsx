@@ -42,12 +42,15 @@ export const RelationshipGraph = ({ guests, relationships, onAddRelationship, on
         } else {
           // Show relationship type selector
           const relationshipType = window.prompt(
-            'Select relationship type:\n1: Close Friend\n2: Family\n3: Friend\n4: Acquaintance',
+            'Select relationship type:\n0: Significant Other\n1: Close Friend\n2: Family\n3: Friend\n4: Acquaintance',
             '3'
           );
-
+          
           let type;
           switch (relationshipType) {
+            case '0':
+              type = RELATIONSHIP_TYPES.SIGNIFICANT_OTHER.value;
+              break;
             case '1':
               type = RELATIONSHIP_TYPES.CLOSE_FRIEND.value;
               break;
