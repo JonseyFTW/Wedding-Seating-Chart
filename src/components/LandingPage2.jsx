@@ -37,40 +37,20 @@ export const LandingPage = ({ onGetStarted }) => {
           image="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=500"
         />
         <FeatureCard
-          title="AI-Powered Seating"
-          description="Import your guest list via CSV and let our AI create optimal seating based on relationships and preferences."
-          image="https://images.unsplash.com/photo-1527525443983-6e60c75fff46?auto=format&fit=crop&q=80&w=500"
+          title="Guest Management"
+          description="Easily organize guests, track RSVPs, and manage dietary preferences."
+          image="https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&q=80&w=500"
         />
       </div>
 
       {/* How It Works */}
-      <div className="max-w-6xl mx-auto mb-16">
+      <div className="max-w-4xl mx-auto mb-16">
         <h2 className="text-3xl font-serif text-[#4A3B52] text-center mb-8">How It Works</h2>
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Manual Approach (Free) */}
-          <div className="bg-white/50 p-8 rounded-xl">
-            <h3 className="text-2xl font-serif text-[#4A3B52] mb-4 text-center">Manual Approach (Free)</h3>
-            <div className="space-y-6">
-              <Step number="1" title="Create Your Event" description="Start with a blank canvas and set up your venue layout." />
-              <Step number="2" title="Add Tables & Elements" description="Drag and drop tables, dance floors, and other elements." />
-              <Step number="3" title="Arrange Guests" description="Manually place guests at tables based on your preferences." />
-              <Step number="4" title="Save & Export" description="Save your layout and export it for your wedding planner." />
-            </div>
-          </div>
-
-          {/* AI-Powered Approach */}
-          <div className="bg-white/50 p-8">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <h3 className="text-2xl font-serif text-[#4A3B52] text-center">AI-Powered Approach</h3>
-              <span className="bg-[#D3A6B8] text-white text-sm px-2 py-1 rounded-full">Premium</span>
-            </div>
-            <div className="space-y-6">
-              <Step number="1" title="Import Guest List" description="Upload your CSV file with guest names and relationships." />
-              <Step number="2" title="Define Connections" description="Set relationship strengths and seating preferences." />
-              <Step number="3" title="Generate Layout" description="Let AI create optimal seating based on relationships." />
-              <Step number="4" title="Fine-tune Results" description="Make final adjustments to the AI-generated arrangement." />
-            </div>
-          </div>
+        <div className="space-y-6">
+          <Step number="1" title="Create Your Event" description="Choose your event type and start with a blank canvas." />
+          <Step number="2" title="Add Tables & Furniture" description="Drag and drop tables, dance floors, and other elements." />
+          <Step number="3" title="Arrange Your Guests" description="Easily assign seats and manage guest preferences." />
+          <Step number="4" title="Save & Share" description="Save your layout and share it with your wedding planner." />
         </div>
       </div>
     </div>
@@ -88,15 +68,15 @@ const FeatureCard = ({ title, description, image }) => (
 );
 
 const Step = ({ number, title, description }) => (
-  <div className="flex items-start gap-4">
+  <div className="flex items-start gap-4 bg-white/50 p-6 rounded-xl">
     <div className="flex-shrink-0">
       <div className="w-8 h-8 bg-[#D3A6B8] rounded-full flex items-center justify-center text-white font-serif">
         {number}
       </div>
     </div>
     <div>
-      <h3 className="text-lg font-serif text-[#4A3B52] mb-1">{title}</h3>
-      <p className="text-[#6B5A74] text-sm">{description}</p>
+      <h3 className="text-xl font-serif text-[#4A3B52] mb-1">{title}</h3>
+      <p className="text-[#6B5A74]">{description}</p>
     </div>
   </div>
 );
