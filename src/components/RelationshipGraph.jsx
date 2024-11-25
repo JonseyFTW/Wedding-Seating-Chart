@@ -97,42 +97,45 @@ export const RelationshipGraph = ({ guests, relationships, onAddRelationship, on
   }, [guests, relationships]);
 
   return (
-    <div ref={containerRef} className="relative h-[400px] border rounded-lg overflow-hidden bg-white">
-      <div className="absolute top-2 left-2 right-2 text-sm text-[#4A3B52] bg-white/90 p-2 rounded-lg shadow-sm border border-[#D3A6B8]/20 z-10">
-        Click on two guests to create or remove a connection between them. Connected guests will be seated together when possible.
-      </div>
-      <ForceGraph2D
-        ref={graphRef}
-        graphData={graphData}
-        nodeLabel="name"
-        nodeColor={node => node.__selected ? '#D3A6B8' : '#4A3B52'}
-        linkColor="color"
-        onNodeClick={handleNodeClick}
-        nodeRelSize={6}
-        linkWidth={2}
-        linkDirectionalParticles={2}
-        linkDirectionalParticleSpeed={0.005}
-        cooldownTicks={50}
-        enableZoom={true}
-        enablePanAndZoom={true}
-        linkLabel="label"
-        width={containerRef.current?.clientWidth || 800}
-        height={containerRef.current?.clientHeight || 400}
-        linkCanvasObjectMode={() => 'after'}
-        linkCanvasObject={(link, ctx) => {
-          const start = link.source;
-          const end = link.target;
-          const textPos = Object.assign({}, start);
-          textPos.x = start.x + (end.x - start.x) * 0.5;
-          textPos.y = start.y + (end.y - start.y) * 0.5;
+// src/components/RelationshipGraph.jsx
+// Update the container height to match GuestList
+<div ref={containerRef} className="relative h-[500px] border rounded-lg overflow-hidden bg-white">
+  <div className="absolute top-2 left-2 right-2 text-xs text-[#4A3B52] bg-white/90 p-2 rounded-lg shadow-sm border border-[#D3A6B8]/20 z-10">
+    Click on two guests to create or remove a connection between them. Connected guests will be seated together when possible.
+  </div>
+  <ForceGraph2D
+    ref={graphRef}
+    graphData={graphData}
+    nodeLabel="name"
+    nodeColor={node => node.__selected ? '#D3A6B8' : '#4A3B52'}
+    linkColor="color"
+    onNodeClick={handleNodeClick}
+    nodeRelSize={5} // Slightly smaller nodes
+    linkWidth={1.5} // Slightly thinner links
+    linkDirectionalParticles={2}
+    linkDirectionalParticleSpeed={0.005}
+    cooldownTicks={50}
+    enableZoom={true}
+    enablePanAndZoom={true}
+    linkLabel="label"
+    width={containerRef.current?.clientWidth || 800}
+    height={containerRef.current?.clientHeight || 500} // Match container height
+    linkCanvasObjectMode={() => 'after'}
+    linkCanvasObject={(link, ctx) => {
+      const start = link.source;
+      const end = link.target;
+      const textPos = Object.assign({}, start);
+      textPos.x = start.x + (end.x - start.x) * 0.5;
+      textPos.y = start.y + (end.y - start.y) * 0.5;
 
-          ctx.font = '10px Arial';
-          ctx.fillStyle = '#4A3B52';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(link.label, textPos.x, textPos.y);
-        }}
-      />
-    </div>
+      ctx.font = '8px Arial'; // Smaller font for link labels
+      ctx.fillStyle = '#4A3B52';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(link.label, textPos.x, textPos.y);
+    }}
+  />
+</div>
+
   );
 };

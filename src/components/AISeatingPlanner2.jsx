@@ -1,4 +1,3 @@
-// src/components/AISeatingPlanner.jsx
 import React, { useState, useCallback, useEffect } from 'react';
 import { 
   Upload, 
@@ -131,25 +130,6 @@ export const AISeatingPlanner = ({ onBack }) => {
     }
   }, [guests, relationships, blacklist, updateAIPlannerData]);
 
-  // Helper Function to Calculate Required Tables
-  const calculateRequiredTables = (guestCount, averageSeatsPerTable = 8) => {
-    const existingSeats = currentEvent?.tables?.reduce((acc, table) => acc + table.seats, 0) || 0;
-    if (existingSeats >= guestCount) return [];
-
-    const seatsNeeded = guestCount - existingSeats;
-    const tablesNeeded = Math.ceil(seatsNeeded / averageSeatsPerTable);
-    
-    return Array(tablesNeeded).fill(null).map((_, index) => ({
-      id: `auto-table-${Date.now()}-${index}`,
-      type: 'round', // Default to round tables
-      seats: averageSeatsPerTable,
-      position: { x: 100 + (index * 160), y: 100 }, // Space tables out
-      guests: [],
-      rotation: 0,
-      active: true
-    }));
-  };
-
   const handleFileUpload = useCallback((event) => {
     const file = event.target.files[0];
     if (file) {
@@ -230,7 +210,7 @@ export const AISeatingPlanner = ({ onBack }) => {
     }
   }, [selectedGuest, addRelationship]);
 
-  // Function to handle applying quick rules
+  // New function to handle applying quick rules
   const handleApplyRule = useCallback((ruleId) => {
     const rule = QUICK_RULES.find(r => r.id === ruleId);
     if (rule) {
@@ -240,29 +220,19 @@ export const AISeatingPlanner = ({ onBack }) => {
     }
   }, [guests, addRelationship, currentEvent]);
 
-  // Updated generateSeatingPlan Function
   const generateSeatingPlan = useCallback(async () => {
-    if (!currentEvent) {
-      toast.error('No event selected');
+    if (!currentEvent?.tables?.length) {
+      toast.error('Please create tables first');
       return;
     }
-  
+
     setIsGenerating(true);
     try {
-      let currentTables = [...(currentEvent.tables || [])];
-      const requiredTables = calculateRequiredTables(guests.length);
-      
-      if (requiredTables.length > 0) {
-        // Add new tables if needed
-        currentTables = [...currentTables, ...requiredTables];
-        toast.success(`Added ${requiredTables.length} new table${requiredTables.length > 1 ? 's' : ''} to accommodate all guests`);
-      }
-  
       const optimizedTables = await optimizeSeating(
         guests, 
         relationships, 
         blacklist, 
-        currentTables,
+        currentEvent.tables,
         seatingPreference
       );
       
@@ -271,12 +241,11 @@ export const AISeatingPlanner = ({ onBack }) => {
       onBack();
     } catch (error) {
       console.error('Error generating seating plan:', error);
-      toast.error('Failed to generate seating plan: ' + error.message);
+      toast.error('Failed to generate seating plan');
     } finally {
       setIsGenerating(false);
     }
-  }, [guests, relationships, blacklist, currentEvent, seatingPreference, updateEventWithAISeating, onBack, calculateRequiredTables]);
-  
+  }, [guests, relationships, blacklist, currentEvent, seatingPreference, updateEventWithAISeating, onBack]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#FDF8F0] to-white pt-24">
@@ -341,9 +310,10 @@ export const AISeatingPlanner = ({ onBack }) => {
                 </div>
               </div>
 
-              {/* Guest Management and Relationship Sections */}
+              {/* Guest Management Section */}
+
               <div className="grid md:grid-cols-2 gap-8 mb-8">
-                <div>
+                <div className="md:col-span-1">
                   <h3 className="text-lg font-serif text-[#4A3B52] mb-4 flex items-center gap-2">
                     <Users className="w-5 h-5 text-[#D3A6B8]" />
                     Guest List
@@ -360,7 +330,7 @@ export const AISeatingPlanner = ({ onBack }) => {
                   />
                 </div>
                 
-                <div>
+                <div className="md:col-span-1">
                   <h3 className="text-lg font-serif text-[#4A3B52] mb-4 flex items-center gap-2">
                     <UserPlus className="w-5 h-5 text-[#D3A6B8]" />
                     Relationships
@@ -373,6 +343,7 @@ export const AISeatingPlanner = ({ onBack }) => {
                   />
                 </div>
               </div>
+
 
               {/* Blacklist Section */}
               <div className="mb-8">

@@ -1,21 +1,6 @@
-// Furniture.jsx
-
 import React, { useState, useCallback } from 'react';
 import { useDraggable } from '@dnd-kit/core';
-import {
-  Music2,
-  GlassWater,
-  Camera,
-  Gift,
-  Cake,
-  ArrowUpRight,
-  Users,
-  RotateCw,
-  RotateCcw,
-  Maximize2,
-  Minimize2,
-  Trash2,
-} from 'lucide-react';
+import { Music2, GlassWater, Camera, Gift, Cake, ArrowUpRight, Users, RotateCw, RotateCcw, Maximize2, Minimize2, Trash2 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 
 const MIN_SIZE = 40;
@@ -26,9 +11,9 @@ export const Furniture = ({ item }) => {
   const { updateFurniture, currentEvent, setCurrentEvent } = useStore();
   const [localRotation, setLocalRotation] = useState(item.rotation || 0);
 
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: item.id,
-    data: item, // Ensure all item data is included
+    data: item,
   });
 
   const draggableStyle = {
@@ -38,8 +23,14 @@ export const Furniture = ({ item }) => {
     zIndex: 1,
     width: `${item.size.width}px`,
     height: `${item.size.height}px`,
-    transition: isDragging ? 'none' : 'transform 200ms ease',
-    cursor: 'grab',
+  };
+
+  const style = {
+    position: 'absolute',
+    left: `${item.position.x}px`,
+    top: `${item.position.y}px`,
+    touchAction: 'none',
+    pointerEvents: 'auto',
   };
 
   const handleRotate = useCallback(
@@ -141,7 +132,7 @@ export const Furniture = ({ item }) => {
   };
 
   return (
-    <div className="relative group" style={{ position: 'absolute', left: `${item.position.x}px`, top: `${item.position.y}px` }}>
+    <div className="relative group" style={style}>
       {/* Controls positioned at the top */}
       <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
         <div className="flex items-center gap-1 bg-[#F4E1B2] rounded-full px-2 py-1 shadow-md border border-[#E5C594]">
@@ -208,7 +199,7 @@ export const Furniture = ({ item }) => {
         </div>
       </div>
 
-      {/* Furniture container with rotation and size applied */}
+      {/* Furniture container with rotation applied */}
       <div
         ref={setNodeRef}
         {...attributes}

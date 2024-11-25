@@ -1,20 +1,18 @@
-// Table.jsx
-
 import React, { useState, useCallback } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { Users, Edit2, RotateCcw, RotateCw, Eye, EyeOff } from 'lucide-react';
 import { GuestEditor } from './GuestEditor';
 import { useStore } from '../store/useStore';
 
-export const Table = ({ table, tableNumber }) => {
+export const Table = ({ table, tableNumber, showNames }) => {
   const { updateTable, setAllTablesInactive, setAllTablesActive } = useStore();
   const [showGuestEditor, setShowGuestEditor] = useState(false);
   const [localRotation, setLocalRotation] = useState(table.rotation || 0);
-  const [guestNamesVisible, setGuestNamesVisible] = useState(true);
+  const [guestNamesVisible, setGuestNamesVisible] = useState(showNames);
 
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: table.id,
-    data: { position: table.position },
+    data: table,
     disabled: showGuestEditor,
   });
 
@@ -41,15 +39,14 @@ export const Table = ({ table, tableNumber }) => {
 
   const draggableStyle = {
     transform: transform
-      ? `translate(${transform.x}px, ${transform.y}px) rotate(${localRotation}deg)`
+      ? `translate3d(${transform.x}px, ${transform.y}px, 0) rotate(${localRotation}deg)`
       : `rotate(${localRotation}deg)`,
     zIndex: showGuestEditor ? 10 : 1,
-    transition: isDragging ? 'none' : 'transform 200ms ease',
-    cursor: showGuestEditor ? 'default' : 'grab',
   };
 
   const style = {
     position: 'absolute',
+    touchAction: 'none',
     width: `${tableDimensions.width}px`,
     height: `${tableDimensions.height}px`,
     borderRadius: tableDimensions.borderRadius,
@@ -96,7 +93,7 @@ export const Table = ({ table, tableNumber }) => {
     const tableDiameter = tableDimensions.width;
     const tableRadius = tableDiameter / 2;
     const labelPadding = 20;
-    const radius = (tableRadius + labelPadding);
+    const radius = tableRadius + labelPadding;
 
     const filledSeats = table.guests.filter((g) => g.name);
     const totalSeats = filledSeats.length;
@@ -137,13 +134,13 @@ export const Table = ({ table, tableNumber }) => {
 
   const getTableContentClasses = () => {
     const baseClasses =
-      'bg-white border-2 border-[#F4E1B2] shadow-lg select-none flex flex-col items-center justify-center gap-1';
+      'bg-white border-2 border-[#F4E1B2] shadow-lg select-none flex flex-col items-center justify-center gap-1 cursor-grab active:cursor-grabbing';
     return table.type === 'round' ? `${baseClasses} rounded-full round-table` : `${baseClasses} rounded-lg`;
   };
   
   return (
     <>
-      <div className="relative group" style={style}>
+      <div className="relative group" style={{ ...style, zIndex: showGuestEditor ? 10 : 1 }}>
         {/* Controls positioned at the top */}
         <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-30">
           <div className="flex items-center gap-1 bg-[#F4E1B2] rounded-full px-2 py-1 shadow-md border border-[#E5C594]">
