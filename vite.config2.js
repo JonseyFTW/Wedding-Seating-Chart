@@ -9,7 +9,7 @@ export default defineConfig({
   plugins: [
     react(),
     sitemap({
-      hostname: 'https://seatyourguests.com', // Replace with your actual domain
+      hostname: 'https://yourdomain.com', // Replace with your actual domain
       // Optional configurations:
       // exclude: ['/excluded-page'], // Pages to exclude
       // routes: async () => {
