@@ -3,6 +3,8 @@ import { auth, db } from '../src/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
 const stripe = new Stripe(process.env.VITE_STRIPE_SECRET_KEY);
+const priceId = process.env.VITE_STRIPE_PRICE_ID;
+
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
