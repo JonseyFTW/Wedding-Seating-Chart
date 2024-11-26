@@ -1,22 +1,31 @@
-// vite.config.js
-
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import sitemap from 'vite-plugin-sitemap'; // Import the sitemap plugin
+import sitemap from 'vite-plugin-sitemap';
+import { copyFileSync } from 'fs';
+import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [
     react(),
     sitemap({
-      hostname: 'https://seatyourguests.com', // Replace with your actual domain
-      // Optional configurations:
-      // exclude: ['/excluded-page'], // Pages to exclude
-      // routes: async () => {
-      //   // If you have dynamic routes, you can fetch them here
-      //   return ['/page1', '/page2', '/dynamic-page'];
-      // },
+      hostname: 'https://seatyourguests.com',
+      dynamicRoutes: [
+        '/',
+        '/seating-planner',
+        '/ai-seating',
+        '/saved-layouts'
+      ],
+      exclude: ['/404'],
+      outDir: './dist',
+      filename: 'sitemap.xml'
     }),
+    {
+      name: 'copy-robots',
+      writeBundle() {
+        copyFileSync('robots.txt', 'dist/robots.txt');
+      },
+    }
   ],
   resolve: {
     alias: {

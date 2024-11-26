@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node generate-sitemap.js",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview --host 0.0.0.0 --port 3000"
   },
@@ -15,6 +15,7 @@
     "@dnd-kit/sortable": "^8.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@headlessui/react": "^1.7.18",
+    "d3": "^7.8.5",
     "d3-force": "^3.0.0",
     "firebase": "^10.8.0",
     "html2canvas": "^1.4.1",
@@ -25,20 +26,19 @@
     "react-dom": "^18.2.0",
     "react-force-graph-2d": "^1.25.3",
     "react-hot-toast": "^2.4.1",
-    "zustand": "^4.5.2",
-    "d3": "^7.8.5",
-    "vite-plugin-sitemap": "^0.5.0"
-
+    "sitemap": "^7.1.1",
+    "vite-plugin-sitemap": "^0.5.0",
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",
     "@web3-storage/w3up-client": "^16.5.1",
     "autoprefixer": "^10.4.18",
+    "axios": "^1.4.0",
     "eslint": "^9.15.0",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
     "vite": "^5.1.6",
-    "vite-plugin-sitemap": "^0.5.0", 
-    "axios": "^1.4.0"
+    "vite-plugin-sitemap": "^0.5.0"
   }
 }
