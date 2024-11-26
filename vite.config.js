@@ -1,51 +1,44 @@
-
-//vite.config.js
+// vite.config.js
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import fs from 'fs';
+import sitemap from 'vite-plugin-sitemap';
 
 export default defineConfig({
   plugins: [
     react(),
+    // Integrate vite-plugin-sitemap
+    sitemap({
+      hostname: 'https://seatyourguests.com',
+      dynamicRoutes: [
+        '/',
+        '/seating-planner',
+        '/ai-seating',
+        '/saved-layouts'
+      ],
+      exclude: ['/404'],
+      outDir: './dist',
+      filename: 'sitemap.xml'
+    }),
+    // Plugin to configure server and preview server middleware
     {
-      name: 'generate-sitemap-robots',
-      writeBundle() {
-        // Generate robots.txt
-        const robotsTxt = `User-agent: *
-Allow: /
-
-Sitemap: https://seatyourguests.com/sitemap.xml`;
-        
-        // Generate sitemap.xml
-        const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://seatyourguests.com/</loc>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://seatyourguests.com/seating-planner</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://seatyourguests.com/ai-seating</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://seatyourguests.com/saved-layouts</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-</urlset>`;
-
-        // Write files to dist directory
-        fs.writeFileSync('dist/robots.txt', robotsTxt);
-        fs.writeFileSync('dist/sitemap.xml', sitemap);
-      }
+      name: 'configure-server',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          if (req.url.endsWith('sitemap.xml')) {
+            res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+          }
+          next();
+        });
+      },
+      configurePreviewServer(server) {
+        server.middlewares.use((req, res, next) => {
+          if (req.url.endsWith('sitemap.xml')) {
+            res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+          }
+          next();
+        });
+      },
     }
   ],
   resolve: {
