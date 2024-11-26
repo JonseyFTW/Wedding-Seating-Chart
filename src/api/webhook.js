@@ -1,22 +1,18 @@
 import Stripe from 'stripe';
-import { db } from '../src/firebase';
+import { db } from '../../src/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 
 const stripe = new Stripe(process.env.VITE_STRIPE_SECRET_KEY);
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+const endpointSecret = process.env.VITE_STRIPE_WEBHOOK_SECRET;
 
 export const config = {
   api: {
-    bodyParser: false,
+    bodyParser: false, // Stripe requires raw body
   },
 };
+
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
   const sig = req.headers['stripe-signature'];
-
   let event;
 
   try {
@@ -25,16 +21,16 @@ export default async function handler(req, res) {
       req.on('data', (chunk) => (data += chunk));
       req.on('end', () => resolve(Buffer.from(data)));
     });
+
     event = stripe.webhooks.constructEvent(rawBody, sig, endpointSecret);
-  } catch (err) {
-    console.error('Webhook Error:', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+  } catch (error) {
+    console.error('Webhook Error:', error.message);
+    return res.status(400).send(`Webhook Error: ${error.message}`);
   }
 
-  // Handle subscription events
   switch (event.type) {
-    case 'customer.subscription.created':
     case 'customer.subscription.updated':
+    case 'customer.subscription.created':
       const subscription = event.data.object;
       const customer = await stripe.customers.retrieve(subscription.customer);
       const firebaseUID = customer.metadata.firebaseUID;
@@ -53,11 +49,9 @@ export default async function handler(req, res) {
       const deletedCustomer = await stripe.customers.retrieve(deletedSubscription.customer);
       const deletedFirebaseUID = deletedCustomer.metadata.firebaseUID;
 
-      await updateDoc(doc(db, 'users', deletedFirebaseUID), {
-        subscription: null,
-      });
+      await updateDoc(doc(db, 'users', deletedFirebaseUID), { subscription: null });
       break;
   }
 
-  res.json({ received: true });
+  res.status(200).send({ received: true });
 }

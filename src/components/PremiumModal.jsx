@@ -17,8 +17,14 @@ export const PremiumModal = ({ isOpen, onClose }) => {
         throw new Error('Stripe has not been initialized correctly.');
       }
 
+      // Check if the user is authenticated
+      const user = auth.currentUser;
+      if (!user) {
+        throw new Error('You must be logged in to subscribe.');
+      }
+
       // Get the Firebase ID Token
-      const idToken = await auth.currentUser.getIdToken();
+      const idToken = await user.getIdToken();
 
       // Create checkout session
       const response = await fetch('/api/create-checkout-session', {
@@ -32,13 +38,17 @@ export const PremiumModal = ({ isOpen, onClose }) => {
         }),
       });
 
+      // Handle non-OK responses
       if (!response.ok) {
-        const errorMessage = await response.json();
-        throw new Error(errorMessage.error || 'Failed to create checkout session');
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error || 'Failed to create checkout session. Please try again.'
+        );
       }
 
       const session = await response.json();
 
+      // Redirect to Stripe Checkout
       const result = await stripe.redirectToCheckout({
         sessionId: session.id,
       });
@@ -48,10 +58,9 @@ export const PremiumModal = ({ isOpen, onClose }) => {
       }
     } catch (error) {
       console.error('Error:', error.message);
-      toast.error(error.message || 'Failed to start the subscription process');
+      toast.error(error.message || 'An error occurred while subscribing.');
     }
   };
-  
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -69,7 +78,7 @@ export const PremiumModal = ({ isOpen, onClose }) => {
             Upgrade to Premium
           </h2>
           <p className="text-[#646E78]">
-            Get access to our powerful AI Seating Planner and more premium features
+            Get access to our powerful AI Seating Planner and more premium features.
           </p>
         </div>
 
@@ -95,7 +104,7 @@ export const PremiumModal = ({ isOpen, onClose }) => {
           <div className="text-3xl font-serif text-[#4A3B52] mb-2">
             $5<span className="text-lg text-[#646E78]">/month</span>
           </div>
-          <p className="text-sm text-[#646E78]">Cancel anytime</p>
+          <p className="text-sm text-[#646E78]">Cancel anytime.</p>
         </div>
 
         <button

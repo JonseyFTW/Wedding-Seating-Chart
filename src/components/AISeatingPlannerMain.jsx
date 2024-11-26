@@ -22,10 +22,6 @@ import { toast } from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 import { PremiumModal } from './PremiumModal';
 
-// Import Firebase functions
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../firebase'; // Adjust the path as per your project structure
-
 // Define Quick Rules
 const QUICK_RULES = [
   {
@@ -107,46 +103,18 @@ const QUICK_RULES = [
 ];
 
 export const AISeatingPlanner = ({ onBack }) => {
-  const { currentUser } = useAuth(); // Assuming useAuth provides currentUser
   const { currentEvent, updateEventWithAISeating, updateAIPlannerData } = useStore();
-  
-  // New State Variables for Premium Logic
-  const [isPremium, setIsPremium] = useState(false);
-  const [showPremiumModal, setShowPremiumModal] = useState(false);
-  
+  const { isPremium } = useAuth();
   const [guests, setGuests] = useState([]);
   const [relationships, setRelationships] = useState([]);
   const [blacklist, setBlacklist] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedGuest, setSelectedGuest] = useState(null);
   const [seatingPreference, setSeatingPreference] = useState(SEATING_PREFERENCES.BALANCED.value);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [appliedRules, setAppliedRules] = useState(new Set());
 
-  // Subscription Check Logic
-  useEffect(() => {
-    const checkSubscription = async () => {
-      if (!currentUser) {
-        setIsPremium(false);
-        return;
-      }
-      const docRef = doc(db, 'users', currentUser.uid);
-      try {
-        const userDoc = await getDoc(docRef);
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          setIsPremium(userData?.subscription?.status === 'active');
-        } else {
-          setIsPremium(false);
-        }
-      } catch (error) {
-        console.error('Error checking subscription:', error);
-        setIsPremium(false);
-      }
-    };
-    checkSubscription();
-  }, [currentUser]);
-
-  // Show Premium Modal if Not Subscribed
+  // Check premium access when component mounts
   useEffect(() => {
     if (!isPremium) {
       setShowPremiumModal(true);
@@ -192,7 +160,6 @@ export const AISeatingPlanner = ({ onBack }) => {
     }));
   };
 
-  // File Upload Handler
   const handleFileUpload = useCallback((event) => {
     if (!isPremium) {
       setShowPremiumModal(true);
@@ -224,7 +191,6 @@ export const AISeatingPlanner = ({ onBack }) => {
     }
   }, [isPremium]);
 
-  // Add Relationship Handler
   const addRelationship = useCallback((guest1Id, guest2Id, relationshipType) => {
     if (!isPremium) {
       setShowPremiumModal(true);
@@ -247,7 +213,6 @@ export const AISeatingPlanner = ({ onBack }) => {
     setSelectedGuest(null);
   }, [isPremium]);
 
-  // Remove Relationship Handler
   const removeRelationship = useCallback((guest1Id, guest2Id) => {
     if (!isPremium) {
       setShowPremiumModal(true);
@@ -260,7 +225,6 @@ export const AISeatingPlanner = ({ onBack }) => {
     ));
   }, [isPremium]);
 
-  // Add to Blacklist Handler
   const addToBlacklist = useCallback((guest1Id, guest2Id) => {
     if (!isPremium) {
       setShowPremiumModal(true);
@@ -279,7 +243,6 @@ export const AISeatingPlanner = ({ onBack }) => {
     setSelectedGuest(null);
   }, [isPremium]);
 
-  // Remove from Blacklist Handler
   const removeFromBlacklist = useCallback((guest1Id, guest2Id) => {
     if (!isPremium) {
       setShowPremiumModal(true);
@@ -292,7 +255,6 @@ export const AISeatingPlanner = ({ onBack }) => {
     ));
   }, [isPremium]);
 
-  // Guest Selection Handler
   const handleGuestSelect = useCallback((guest) => {
     if (!isPremium) {
       setShowPremiumModal(true);
@@ -301,7 +263,6 @@ export const AISeatingPlanner = ({ onBack }) => {
     setSelectedGuest(selectedGuest?.id === guest.id ? null : guest);
   }, [isPremium, selectedGuest]);
 
-  // Relationship Addition Handler
   const handleRelationshipAdd = useCallback((targetGuest, relationshipType) => {
     if (!isPremium) {
       setShowPremiumModal(true);
@@ -313,7 +274,7 @@ export const AISeatingPlanner = ({ onBack }) => {
     }
   }, [isPremium, selectedGuest, addRelationship]);
 
-  // Handle Applying Quick Rules
+  // Function to handle applying quick rules
   const handleApplyRule = useCallback((ruleId) => {
     if (!isPremium) {
       setShowPremiumModal(true);
@@ -328,7 +289,7 @@ export const AISeatingPlanner = ({ onBack }) => {
     }
   }, [isPremium, guests, addRelationship, currentEvent]);
 
-  // Generate Seating Plan Function
+  // Updated generateSeatingPlan Function
   const generateSeatingPlan = useCallback(async () => {
     if (!isPremium) {
       setShowPremiumModal(true);
@@ -370,7 +331,6 @@ export const AISeatingPlanner = ({ onBack }) => {
     }
   }, [isPremium, guests, relationships, blacklist, currentEvent, seatingPreference, updateEventWithAISeating, onBack, calculateRequiredTables]);
 
-  // Render for Non-Premium Users
   if (!isPremium) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#FDF8F0] to-white pt-24">
@@ -390,7 +350,7 @@ export const AISeatingPlanner = ({ onBack }) => {
     );
   }
 
-  // Render for Premium Users
+  // Rest of your existing render logic for premium users
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#FDF8F0] to-white pt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -470,7 +430,6 @@ export const AISeatingPlanner = ({ onBack }) => {
                     blacklist={blacklist}
                     onAddToBlacklist={addToBlacklist}
                     onRemoveFromBlacklist={removeFromBlacklist}
-                    isPremium={isPremium} // Pass isPremium
                   />
                 </div>
                 
@@ -484,7 +443,6 @@ export const AISeatingPlanner = ({ onBack }) => {
                     relationships={relationships}
                     onAddRelationship={addRelationship}
                     onRemoveRelationship={removeRelationship}
-                    isPremium={isPremium} // Pass isPremium
                   />
                 </div>
               </div>
@@ -500,7 +458,6 @@ export const AISeatingPlanner = ({ onBack }) => {
                   blacklist={blacklist}
                   onAddToBlacklist={addToBlacklist}
                   onRemoveFromBlacklist={removeFromBlacklist}
-                  isPremium={isPremium} // Pass isPremium
                 />
               </div>
 
