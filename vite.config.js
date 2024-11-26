@@ -7,61 +7,38 @@ import sitemap from 'vite-plugin-sitemap';
 export default defineConfig({
   plugins: [
     react(),
-    // Integrate vite-plugin-sitemap
     sitemap({
       hostname: 'https://seatyourguests.com',
       dynamicRoutes: [
-        '/',
+        '/', // Add more dynamic routes if necessary
         '/seating-planner',
         '/ai-seating',
-        '/saved-layouts'
+        '/saved-layouts',
       ],
-      exclude: ['/404'],
+      exclude: ['/404'], // Exclude error pages or specific paths
       outDir: './dist',
-      filename: 'sitemap.xml'
+      filename: 'sitemap.xml', // Output sitemap file name
     }),
-    // Plugin to configure server and preview server middleware
-    {
-      name: 'configure-server',
-      configureServer(server) {
-        server.middlewares.use((req, res, next) => {
-          if (req.url.endsWith('sitemap.xml')) {
-            res.setHeader('Content-Type', 'application/xml; charset=utf-8');
-          }
-          next();
-        });
-      },
-      configurePreviewServer(server) {
-        server.middlewares.use((req, res, next) => {
-          if (req.url.endsWith('sitemap.xml')) {
-            res.setHeader('Content-Type', 'application/xml; charset=utf-8');
-          }
-          next();
-        });
-      },
-    }
   ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src')
-    }
+      '@': path.resolve(__dirname, './src'), // Shortcut for importing from `src`
+    },
   },
   server: {
     port: 5173,
     host: true,
     headers: {
+      'Access-Control-Allow-Origin': '*', // Allow API calls from all origins
       'Cross-Origin-Opener-Policy': 'same-origin',
       'Cross-Origin-Resource-Policy': 'cross-origin',
-      'Access-Control-Allow-Origin': '*'
-    }
+    },
   },
   preview: {
     port: 3000,
     host: true,
     headers: {
-      'Cross-Origin-Opener-Policy': 'same-origin',
-      'Cross-Origin-Resource-Policy': 'cross-origin',
-      'Access-Control-Allow-Origin': '*'
-    }
-  }
+      'Access-Control-Allow-Origin': '*',
+    },
+  },
 });
