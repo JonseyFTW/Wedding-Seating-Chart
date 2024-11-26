@@ -1,4 +1,6 @@
 // Updated AuthModal.jsx
+import React, { useState } from 'react';
+
 export const AuthModal = ({ isOpen, onClose = () => {} }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -122,3 +124,4 @@ export const AuthModal = ({ isOpen, onClose = () => {} }) => {
     </div>
   );
 };
+
