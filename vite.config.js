@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import sitemap from 'vite-plugin-sitemap';
-import { copyFileSync } from 'fs';
+import { copyFileSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
 
 export default defineConfig({
@@ -24,6 +24,25 @@ export default defineConfig({
       name: 'copy-robots',
       writeBundle() {
         copyFileSync('robots.txt', 'dist/robots.txt');
+      },
+    },
+    {
+      name: 'configure-server',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          if (req.url.endsWith('sitemap.xml')) {
+            res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+          }
+          next();
+        });
+      },
+      configurePreviewServer(server) {
+        server.middlewares.use((req, res, next) => {
+          if (req.url.endsWith('sitemap.xml')) {
+            res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+          }
+          next();
+        });
       },
     }
   ],
