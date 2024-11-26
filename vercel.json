@@ -1,13 +1,24 @@
 {
-  "headers": [
-    {
-      "source": "/sitemap.xml",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/xml; charset=utf-8"
-        }
-      ]
+    "rewrites": [
+      { "source": "/(.*)", "destination": "/index.html" }
+    ],
+    "headers": [
+      {
+        "source": "/sitemap.xml",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/xml; charset=utf-8"
+          }
+        ]
+      }
+    ],
+    "build": {
+      "env": {
+        "VITE_STRIPE_PUBLIC_KEY": "@stripe_public_key",
+        "VITE_STRIPE_SECRET_KEY": "@stripe_secret_key",
+        "VITE_STRIPE_PRICE_ID": "@stripe_price_id",
+        "VITE_STRIPE_WEBHOOK_SECRET": "@stripe_webhook_secret"
+      }
     }
-  ]
-}
+  }
