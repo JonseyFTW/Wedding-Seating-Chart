@@ -87,12 +87,15 @@ export const AuthProvider = ({ children }) => {
       });
 
       toast.success('Account created successfully!');
-    } catch (error) {
-      console.error('Error during signup:', error);
-      toast.error('Failed to create account.');
-      throw error;
-    }
-  };
+    
+    // Close the modal after signup
+    if (onClose) onClose();
+  } catch (error) {
+    console.error('Error during signup:', error);
+    toast.error('Failed to create account.');
+    throw error;
+  }
+};
 
   const login = async (email, password) => {
     try {

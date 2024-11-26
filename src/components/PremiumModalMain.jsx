@@ -1,7 +1,7 @@
 import React from 'react';
 import { Crown, X } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
-import toast from 'react-hot-toast';
+import toast from 'react-hot-toast'; // Assuming toast is used for error notifications
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
@@ -11,9 +11,12 @@ export const PremiumModal = ({ isOpen, onClose }) => {
   const handleSubscribe = async () => {
     try {
       const stripe = await stripePromise;
-  
-      const idToken = await auth.currentUser.getIdToken();
-  
+
+      if (!stripe) {
+        throw new Error('Stripe has not been initialized correctly.');
+      }
+
+      // Create checkout session
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: {
@@ -21,27 +24,26 @@ export const PremiumModal = ({ isOpen, onClose }) => {
         },
         body: JSON.stringify({
           priceId: import.meta.env.VITE_STRIPE_PRICE_ID,
-          idToken, // Pass the ID Token
         }),
       });
-  
+
       if (!response.ok) {
-        const errorMessage = await response.json();
-        throw new Error(errorMessage.error || 'Failed to create checkout session');
+        throw new Error('Failed to create checkout session');
       }
-  
+
       const session = await response.json();
-  
+
+      // Redirect to Stripe Checkout
       const result = await stripe.redirectToCheckout({
         sessionId: session.id,
       });
-  
+
       if (result.error) {
         throw new Error(result.error.message);
       }
     } catch (error) {
       console.error('Error:', error.message);
-      toast.error(error.message || 'Failed to start the subscription process');
+      toast.error('Failed to start the subscription process');
     }
   };
 

@@ -1,6 +1,7 @@
 import Stripe from 'stripe';
 import { auth, db } from '../src/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { getAuth } from 'firebase-admin/auth';
 
 const stripe = new Stripe(process.env.VITE_STRIPE_SECRET_KEY);
 
@@ -10,21 +11,19 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { priceId } = req.body;
+    const { priceId, idToken } = req.body;
 
-    // Ensure priceId is provided
-    if (!priceId) {
-      return res.status(400).json({ error: 'Price ID is required' });
+    // Ensure priceId and idToken are provided
+    if (!priceId || !idToken) {
+      return res.status(400).json({ error: 'Price ID and ID Token are required' });
     }
 
-    // Get the currently authenticated user
-    const user = auth.currentUser;
-    if (!user) {
-      return res.status(401).json({ error: 'Not authenticated' });
-    }
+    // Verify the ID Token
+    const decodedToken = await getAuth().verifyIdToken(idToken);
+    const userId = decodedToken.uid;
 
     // Fetch user data from Firestore
-    const userDoc = await getDoc(doc(db, 'users', user.uid));
+    const userDoc = await getDoc(doc(db, 'users', userId));
     if (!userDoc.exists()) {
       return res.status(404).json({ error: 'User not found in database' });
     }
@@ -36,16 +35,16 @@ export default async function handler(req, res) {
     if (!customerId) {
       // Create a new Stripe customer
       const customer = await stripe.customers.create({
-        email: user.email,
+        email: decodedToken.email,
         metadata: {
-          firebaseUID: user.uid,
+          firebaseUID: userId,
         },
       });
 
       customerId = customer.id;
 
       // Save the customer ID to Firestore
-      await updateDoc(doc(db, 'users', user.uid), {
+      await updateDoc(doc(db, 'users', userId), {
         stripeCustomerId: customerId,
       });
     }
@@ -68,7 +67,7 @@ export default async function handler(req, res) {
     // Respond with the session ID
     res.status(200).json({ id: session.id });
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error:', error.message);
     res.status(500).json({ error: 'Failed to create checkout session' });
   }
 }
