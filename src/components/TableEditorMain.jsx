@@ -164,76 +164,65 @@ export const TableEditor = ({ isMobileView, onBack }) => {
           </div>
         </div>
 
-     {/* Secondary Bar with Layout Name and Actions */}
+        {/* Secondary Bar with Layout Name and Actions */}
         <div className="fixed top-[52px] left-0 right-0 bg-white/95 border-b border-[#D3A6B8]/20 z-20">
-        <div className="max-w-7xl mx-auto px-6">
-            <div className="flex items-center justify-between py-4 relative">
-            {/* Back Button */}
-            <button
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex items-center justify-between py-4">
+              <button
                 onClick={handleBack}
                 className="flex items-center gap-2 px-4 py-2 text-[#4A3B52] bg-white hover:bg-gray-50 rounded-full transition-all duration-300 text-sm border border-[#D3A6B8]/20 shadow-sm hover:shadow-md"
-            >
+              >
                 <ArrowLeft className="w-4 h-4 text-[#D3A6B8]" />
                 <span className="hidden md:inline">Back to Menu</span>
-            </button>
+              </button>
 
-            {/* Center Event Name */}
-            {currentEvent?.name && (
-            <div className="flex-1 flex justify-center">
-                <h2 className="text-lg font-serif text-[#4A3B52] whitespace-nowrap overflow-hidden overflow-ellipsis max-w-[50%] text-center">
-                {currentEvent.name}
+              {currentEvent?.name && (
+                <h2 className="absolute left-1/2 transform -translate-x-1/2 text-lg font-serif text-[#4A3B52]">
+                  {currentEvent.name}
                 </h2>
-            </div>
-            )}
-            {/* Action Buttons */}
-            <div
-                className="flex items-center gap-2 justify-end"
-                style={{
-                position: 'relative', // Prevent absolute conflicts
-                marginLeft: 'auto',  // Ensure alignment to the right
-                zIndex: 10,          // Bring buttons above center text
-                }}
-            >
+              )}
+
+              <div className="flex items-center gap-2">
                 <button
-                onClick={() => setShowAIPlanner(true)}
-                className="flex items-center gap-2 px-4 py-2 text-[#4A3B52] bg-white hover:bg-gray-50 rounded-full transition-all duration-300 text-sm border border-[#D3A6B8]/20 shadow-sm hover:shadow-md"
+                  onClick={() => setShowAIPlanner(true)}
+                  className="flex items-center gap-2 px-4 py-2 text-[#4A3B52] bg-white hover:bg-gray-50 rounded-full transition-all duration-300 text-sm border border-[#D3A6B8]/20 shadow-sm hover:shadow-md"
                 >
-                <Brain className="w-4 h-4 text-[#D3A6B8]" />
-                <span className="hidden md:inline">AI Planner</span>
+                  <Brain className="w-4 h-4 text-[#D3A6B8]" />
+                  <span className="hidden md:inline">AI Planner</span>
                 </button>
                 {currentUser && (
-                <button
+                  <button
                     onClick={() => setShowSaveModal(true)}
                     className="flex items-center gap-2 px-4 py-2 text-[#4A3B52] bg-white hover:bg-gray-50 rounded-full transition-all duration-300 text-sm border border-[#D3A6B8]/20 shadow-sm hover:shadow-md"
-                >
+                  >
                     <Save className="w-4 h-4 text-[#D3A6B8]" />
                     <span className="hidden md:inline">Save</span>
-                </button>
+                  </button>
                 )}
-                <button
-                onClick={handleEmail}
-                className="flex items-center gap-2 px-4 py-2 text-[#4A3B52] bg-white hover:bg-gray-50 rounded-full transition-all duration-300 text-sm border border-[#D3A6B8]/20 shadow-sm hover:shadow-md"
+                <button 
+                  onClick={handleEmail}
+                  className="flex items-center gap-2 px-4 py-2 text-[#4A3B52] bg-white hover:bg-gray-50 rounded-full transition-all duration-300 text-sm border border-[#D3A6B8]/20 shadow-sm hover:shadow-md"
                 >
-                <Mail className="w-4 h-4 text-[#D3A6B8]" />
-                <span className="hidden md:inline">Email</span>
+                  <Mail className="w-4 h-4 text-[#D3A6B8]" />
+                  <span className="hidden md:inline">Email</span>
                 </button>
-                <button
-                onClick={handleExport}
-                className="flex items-center gap-2 px-4 py-2 text-[#4A3B52] bg-white hover:bg-gray-50 rounded-full transition-all duration-300 text-sm border border-[#D3A6B8]/20 shadow-sm hover:shadow-md"
+                <button 
+                  onClick={handleExport}
+                  className="flex items-center gap-2 px-4 py-2 text-[#4A3B52] bg-white hover:bg-gray-50 rounded-full transition-all duration-300 text-sm border border-[#D3A6B8]/20 shadow-sm hover:shadow-md"
                 >
-                <Download className="w-4 h-4 text-[#D3A6B8]" />
-                <span className="hidden md:inline">Export</span>
+                  <Download className="w-4 h-4 text-[#D3A6B8]" />
+                  <span className="hidden md:inline">Export</span>
                 </button>
-                <button
-                onClick={() => setShowGrid(!showGrid)}
-                className="flex items-center gap-2 px-4 py-2 text-[#4A3B52] bg-white hover:bg-gray-50 rounded-full transition-all duration-300 text-sm border border-[#D3A6B8]/20 shadow-sm hover:shadow-md"
+                <button 
+                  onClick={() => setShowGrid(!showGrid)}
+                  className="flex items-center gap-2 px-4 py-2 text-[#4A3B52] bg-white hover:bg-gray-50 rounded-full transition-all duration-300 text-sm border border-[#D3A6B8]/20 shadow-sm hover:shadow-md"
                 >
-                <Grid className="w-4 h-4 text-[#D3A6B8]" />
-                <span className="hidden md:inline">Grid</span>
+                  <Grid className="w-4 h-4 text-[#D3A6B8]" />
+                  <span className="hidden md:inline">Grid</span>
                 </button>
+              </div>
             </div>
-            </div>
-        </div>
+          </div>
         </div>
 
         {/* Adjust the floor plan container to account for both headers */}

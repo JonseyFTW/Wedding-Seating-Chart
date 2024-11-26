@@ -7,10 +7,11 @@ import { SavedLayouts } from './SavedLayouts';
 import { useAuth } from '../contexts/AuthContext';
 
 const eventTypes = [
-  'After hours',
-  'We make it official',
-  'Cocktails, eats & dancing',
-  'After Party',
+  'Reception',
+  'Quinceañera/Sweet 16',
+  'Rehearsal Dinner',
+  'Corporate Banquet',
+  'Other'
 ];
 
 export const EventSelector = () => {
