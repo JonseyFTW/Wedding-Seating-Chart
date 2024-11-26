@@ -4,7 +4,8 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  updateProfile
 } from 'firebase/auth';
 import { auth, googleProvider } from '../firebase';
 import { toast } from 'react-hot-toast';
@@ -29,9 +30,12 @@ export const AuthProvider = ({ children }) => {
     return unsubscribe;
   }, []);
 
-  const signup = async (email, password) => {
+  const signup = async (email, password, firstName, lastName) => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const { user } = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(user, {
+        displayName: `${firstName} ${lastName}`
+      });
       toast.success('Account created successfully!');
     } catch (error) {
       toast.error('Failed to create account');

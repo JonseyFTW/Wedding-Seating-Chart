@@ -7,7 +7,8 @@ import {
   onAuthStateChanged,
   updateProfile
 } from 'firebase/auth';
-import { auth, googleProvider } from '../firebase';
+import { auth, googleProvider, db } from '../firebase';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
 
 const AuthContext = createContext(null);
@@ -21,10 +22,24 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [subscription, setSubscription] = useState(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Get user's subscription status
+        const userRef = doc(db, 'users', user.uid);
+        const unsubscribeSnapshot = onSnapshot(userRef, (doc) => {
+          if (doc.exists()) {
+            setSubscription(doc.data().subscription || null);
+          }
+        });
+        setCurrentUser(user);
+        return () => unsubscribeSnapshot();
+      } else {
+        setCurrentUser(null);
+        setSubscription(null);
+      }
       setLoading(false);
     });
     return unsubscribe;
@@ -36,6 +51,17 @@ export const AuthProvider = ({ children }) => {
       await updateProfile(user, {
         displayName: `${firstName} ${lastName}`
       });
+      
+      // Create user document in Firestore
+      await setDoc(doc(db, 'users', user.uid), {
+        email: user.email,
+        firstName,
+        lastName,
+        displayName: `${firstName} ${lastName}`,
+        createdAt: new Date().toISOString(),
+        subscription: null
+      });
+      
       toast.success('Account created successfully!');
     } catch (error) {
       toast.error('Failed to create account');
@@ -55,7 +81,24 @@ export const AuthProvider = ({ children }) => {
 
   const loginWithGoogle = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      const { user } = await signInWithPopup(auth, googleProvider);
+      
+      // Check if user document exists, if not create it
+      const userRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userRef);
+      
+      if (!userDoc.exists()) {
+        const names = user.displayName?.split(' ') || ['', ''];
+        await setDoc(userRef, {
+          email: user.email,
+          firstName: names[0],
+          lastName: names[1],
+          displayName: user.displayName,
+          createdAt: new Date().toISOString(),
+          subscription: null
+        });
+      }
+      
       toast.success('Logged in with Google successfully!');
     } catch (error) {
       toast.error('Failed to log in with Google');
@@ -75,11 +118,13 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     currentUser,
+    subscription,
     signup,
     login,
     loginWithGoogle,
     logout,
-    loading
+    loading,
+    isPremium: subscription?.status === 'active'
   };
 
   return (

@@ -8,7 +8,8 @@ import {
   RefreshCw, 
   ArrowLeft, 
   Check, 
-  Plus 
+  Plus,
+  Crown 
 } from 'lucide-react';
 import { parse } from 'papaparse';
 import { useStore } from '../store/useStore';
@@ -18,6 +19,8 @@ import { BlacklistManager } from './BlacklistManager';
 import { optimizeSeating } from '../utils/seatingOptimizer';
 import { RELATIONSHIP_TYPES, SEATING_PREFERENCES } from '../utils/constants';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '../contexts/AuthContext';
+import { PremiumModal } from './PremiumModal';
 
 // Define Quick Rules
 const QUICK_RULES = [
@@ -101,15 +104,22 @@ const QUICK_RULES = [
 
 export const AISeatingPlanner = ({ onBack }) => {
   const { currentEvent, updateEventWithAISeating, updateAIPlannerData } = useStore();
+  const { isPremium } = useAuth();
   const [guests, setGuests] = useState([]);
   const [relationships, setRelationships] = useState([]);
   const [blacklist, setBlacklist] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedGuest, setSelectedGuest] = useState(null);
   const [seatingPreference, setSeatingPreference] = useState(SEATING_PREFERENCES.BALANCED.value);
-  
-  // New state for applied rules
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [appliedRules, setAppliedRules] = useState(new Set());
+
+  // Check premium access when component mounts
+  useEffect(() => {
+    if (!isPremium) {
+      setShowPremiumModal(true);
+    }
+  }, [isPremium]);
 
   // Load saved AI Planner data when component mounts
   useEffect(() => {
@@ -151,6 +161,11 @@ export const AISeatingPlanner = ({ onBack }) => {
   };
 
   const handleFileUpload = useCallback((event) => {
+    if (!isPremium) {
+      setShowPremiumModal(true);
+      return;
+    }
+
     const file = event.target.files[0];
     if (file) {
       parse(file, {
@@ -174,9 +189,14 @@ export const AISeatingPlanner = ({ onBack }) => {
         skipEmptyLines: true
       });
     }
-  }, []);
+  }, [isPremium]);
 
   const addRelationship = useCallback((guest1Id, guest2Id, relationshipType) => {
+    if (!isPremium) {
+      setShowPremiumModal(true);
+      return;
+    }
+
     setRelationships(prev => {
       // Avoid duplicate relationships
       const exists = prev.some(rel => 
@@ -191,16 +211,26 @@ export const AISeatingPlanner = ({ onBack }) => {
       }];
     });
     setSelectedGuest(null);
-  }, []);
+  }, [isPremium]);
 
   const removeRelationship = useCallback((guest1Id, guest2Id) => {
+    if (!isPremium) {
+      setShowPremiumModal(true);
+      return;
+    }
+
     setRelationships(prev => prev.filter(
       rel => !(rel.source === guest1Id && rel.target === guest2Id) &&
             !(rel.source === guest2Id && rel.target === guest1Id)
     ));
-  }, []);
+  }, [isPremium]);
 
   const addToBlacklist = useCallback((guest1Id, guest2Id) => {
+    if (!isPremium) {
+      setShowPremiumModal(true);
+      return;
+    }
+
     setBlacklist(prev => {
       // Avoid duplicate blacklist entries
       const exists = prev.some(rel => 
@@ -211,37 +241,61 @@ export const AISeatingPlanner = ({ onBack }) => {
       return [...prev, { source: guest1Id, target: guest2Id }];
     });
     setSelectedGuest(null);
-  }, []);
+  }, [isPremium]);
 
   const removeFromBlacklist = useCallback((guest1Id, guest2Id) => {
+    if (!isPremium) {
+      setShowPremiumModal(true);
+      return;
+    }
+
     setBlacklist(prev => prev.filter(
       rel => !(rel.source === guest1Id && rel.target === guest2Id) &&
             !(rel.source === guest2Id && rel.target === guest1Id)
     ));
-  }, []);
+  }, [isPremium]);
 
   const handleGuestSelect = useCallback((guest) => {
+    if (!isPremium) {
+      setShowPremiumModal(true);
+      return;
+    }
     setSelectedGuest(selectedGuest?.id === guest.id ? null : guest);
-  }, [selectedGuest]);
+  }, [isPremium, selectedGuest]);
 
   const handleRelationshipAdd = useCallback((targetGuest, relationshipType) => {
+    if (!isPremium) {
+      setShowPremiumModal(true);
+      return;
+    }
+
     if (selectedGuest && targetGuest.id !== selectedGuest.id) {
       addRelationship(selectedGuest.id, targetGuest.id, relationshipType);
     }
-  }, [selectedGuest, addRelationship]);
+  }, [isPremium, selectedGuest, addRelationship]);
 
   // Function to handle applying quick rules
   const handleApplyRule = useCallback((ruleId) => {
+    if (!isPremium) {
+      setShowPremiumModal(true);
+      return;
+    }
+
     const rule = QUICK_RULES.find(r => r.id === ruleId);
     if (rule) {
       rule.apply(guests, addRelationship, currentEvent);
       setAppliedRules(prev => new Set([...prev, ruleId]));
       toast.success(`Applied rule: ${rule.label}`);
     }
-  }, [guests, addRelationship, currentEvent]);
+  }, [isPremium, guests, addRelationship, currentEvent]);
 
   // Updated generateSeatingPlan Function
   const generateSeatingPlan = useCallback(async () => {
+    if (!isPremium) {
+      setShowPremiumModal(true);
+      return;
+    }
+
     if (!currentEvent) {
       toast.error('No event selected');
       return;
@@ -275,9 +329,28 @@ export const AISeatingPlanner = ({ onBack }) => {
     } finally {
       setIsGenerating(false);
     }
-  }, [guests, relationships, blacklist, currentEvent, seatingPreference, updateEventWithAISeating, onBack, calculateRequiredTables]);
-  
+  }, [isPremium, guests, relationships, blacklist, currentEvent, seatingPreference, updateEventWithAISeating, onBack, calculateRequiredTables]);
 
+  if (!isPremium) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#FDF8F0] to-white pt-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-8 flex items-center">
+            <button
+              onClick={onBack}
+              className="flex items-center gap-2 px-4 py-2 text-[#4A3B52] bg-white hover:bg-gray-50 rounded-full transition-all duration-300 text-sm border border-[#D3A6B8]/20 shadow-sm hover:shadow-md"
+            >
+              <ArrowLeft className="w-4 h-4 text-[#D3A6B8]" />
+              Back to Layout
+            </button>
+          </div>
+          <PremiumModal isOpen={showPremiumModal} onClose={() => setShowPremiumModal(false)} />
+        </div>
+      </div>
+    );
+  }
+
+  // Rest of your existing render logic for premium users
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#FDF8F0] to-white pt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -425,6 +498,8 @@ export const AISeatingPlanner = ({ onBack }) => {
           )}
         </div>
       </div>
+      {/* Premium Modal */}
+      <PremiumModal isOpen={showPremiumModal} onClose={() => setShowPremiumModal(false)} />
     </div>
   );
 };
