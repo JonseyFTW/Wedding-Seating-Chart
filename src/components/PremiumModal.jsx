@@ -12,8 +12,14 @@ export const PremiumModal = ({ isOpen, onClose }) => {
     try {
       const stripe = await stripePromise;
   
+      if (!stripe) {
+        throw new Error('Stripe has not been initialized correctly.');
+      }
+  
+      // Get the Firebase ID Token
       const idToken = await auth.currentUser.getIdToken();
   
+      // Create checkout session
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: {
@@ -44,6 +50,7 @@ export const PremiumModal = ({ isOpen, onClose }) => {
       toast.error(error.message || 'Failed to start the subscription process');
     }
   };
+  
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
