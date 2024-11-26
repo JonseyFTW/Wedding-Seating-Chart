@@ -5,7 +5,11 @@ import { doc, updateDoc } from 'firebase/firestore';
 const stripe = new Stripe(process.env.VITE_STRIPE_SECRET_KEY);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -16,7 +20,11 @@ export default async function handler(req, res) {
   let event;
 
   try {
-    const rawBody = JSON.stringify(req.body);
+    const rawBody = await new Promise((resolve) => {
+      let data = '';
+      req.on('data', (chunk) => (data += chunk));
+      req.on('end', () => resolve(Buffer.from(data)));
+    });
     event = stripe.webhooks.constructEvent(rawBody, sig, endpointSecret);
   } catch (err) {
     console.error('Webhook Error:', err.message);

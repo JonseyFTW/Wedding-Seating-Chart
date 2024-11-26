@@ -5,9 +5,12 @@ import { initializeApp, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 
 // Initialize Firebase Admin SDK (only once)
-const app = initializeApp({
+if (!process.env.FIREBASE_CLIENT_EMAIL) {
+  throw new Error('Missing Firebase Admin credentials in environment variables.');
+}
+
+initializeApp({
   credential: cert({
-    // Add your Firebase Admin SDK credentials here for the server
     type: process.env.FIREBASE_TYPE,
     project_id: process.env.FIREBASE_PROJECT_ID,
     private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
@@ -31,16 +34,13 @@ export default async function handler(req, res) {
   try {
     const { priceId, idToken } = req.body;
 
-    // Ensure priceId and idToken are provided
     if (!priceId || !idToken) {
       return res.status(400).json({ error: 'Price ID and ID Token are required' });
     }
 
-    // Verify the ID token using Firebase Admin SDK
     const decodedToken = await getAuth().verifyIdToken(idToken);
     const userId = decodedToken.uid;
 
-    // Fetch user data from Firestore
     const userDoc = await getDoc(doc(db, 'users', userId));
     if (!userDoc.exists()) {
       return res.status(404).json({ error: 'User not found in database' });
@@ -48,12 +48,10 @@ export default async function handler(req, res) {
 
     const userData = userDoc.data();
 
-    // Check if user already has a Stripe customer ID
     let customerId = userData.stripeCustomerId;
     if (!customerId) {
-      // Create a new Stripe customer
       const customer = await stripe.customers.create({
-        email: decodedToken.email,
+        email: decodedToken.email || userData.email,
         metadata: {
           firebaseUID: userId,
         },
@@ -61,13 +59,11 @@ export default async function handler(req, res) {
 
       customerId = customer.id;
 
-      // Save the customer ID to Firestore
       await updateDoc(doc(db, 'users', userId), {
         stripeCustomerId: customerId,
       });
     }
 
-    // Create a checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
@@ -82,7 +78,6 @@ export default async function handler(req, res) {
       cancel_url: `${req.headers.origin}/subscription-canceled`,
     });
 
-    // Respond with the session ID
     res.status(200).json({ id: session.id });
   } catch (error) {
     console.error('Error:', error.message);
